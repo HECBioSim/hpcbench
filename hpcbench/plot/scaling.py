@@ -1,0 +1,231 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Plot scaling
+"""
+
+import argparse
+import matplotlib.pyplot as plt
+from more_itertools import sort_together
+from hpcbench.plot.util import get_data, path_with_wildcard
+import numpy as np
+from collections import OrderedDict
+
+parser = argparse.ArgumentParser(
+    description="Plot scaling (e.g. ns/hour, ns/watt) from hpcbench log files")
+parser.add_argument("-m", "--matching", type=str, nargs="+",
+                    help="Conditions that a hpcbench output json file has to "
+                    "match to be included. The format is: "
+                    "--matching entry:nestedentry=condition. You can supply "
+                    "multiple matching args, all of them have to be true.")
+parser.add_argument("-x", "--x", type=str,
+                    help="Location(s) within the json file for the x values, "
+                    "e.g. \"gromacs:Totals:Atoms\". A ? can also be used as a "
+                    "wildcard.")
+parser.add_argument("-y", "--y", type=str, action="append",
+                    help="Location(s) within the json file for the y values, "
+                    "e.g. \"gromacs:Totals:Wall Time (s)\". Call multiple "
+                    "times to make a stack plot.")
+parser.add_argument("-l", "--label", type=str,
+                    help="Location(s) within the json file to use as a label,"
+                    "e.g. \"meta:slurm:gres\". A ? can also be used as a "
+                    "wildcard.")
+parser.add_argument("-d", "--directory", type=str,
+                    help="Directory to search for hpcbench output files.")
+parser.add_argument("-o", "--outfile", type=str, default=None,
+                    help="Plot output filename")
+parser.add_argument("-s", "--xscale", type=str, default="log",
+                    help="Plot x scale. Can be linear, log, symlog or logit")
+parser.add_argument("-c", "--yscale", type=str, default="log",
+                    help="Plot y scale. Can be linear, log, symlog or logit")
+parser.add_argument("-p", "--outside", action="store_true",
+                    help="Show legend outside plot area")
+parser.add_argument("-t", "--stack", action="store_true",
+                    help="Make a stack plot")
+
+
+def plot(data, xlabel, ylabel, outfile, xscale="linear", yscale="linear",
+         legend_outside=False, sort=True):
+    """
+    Plot the results from get_data.
+
+    Args:
+        data: the dictionary produced by get_data, a dictionary indexed by
+        the label, with each entry being a dictionary with x and y values
+        xlabel: plot x-axis label, a string
+        ylabel: plot y-axis label, a string
+        outfile: name of output file, a string
+        xscale: scale of the x-axis. can be 'linear', 'log', etc
+        xscale: scale of the y-axis. can be 'linear', 'log', etc
+        legend_outside: whether to put the legend outside the main plot
+        area. A boolean.
+        sort: whether to sort the data by the x values. A boolena.
+    """
+    fig, ax = plt.subplots()
+    for key, value in data.items():
+        x, y = value['x'], value['y']
+        if sort:
+            x, y = sort_together([x, y])
+        else:
+            ax.plot(x, y, label=key)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_xscale(xscale)
+    ax.set_yscale(yscale)
+    if legend_outside:
+        ax.legend(bbox_to_anchor=(1.04, 0.5), loc="center left", frameon=False)
+    else:
+        ax.legend()
+    plt.tight_layout
+    plt.savefig(outfile, bbox_inches="tight")
+
+
+def transpose(d):
+    """
+    Tranpose the contents of a dictionary, where the elements of that
+    dictionary are dictionaries with 'x' and 'y' elements, which are lists.
+
+    Args
+        d: input dictionary
+
+    Returns:
+        transposed dictionary
+
+    """
+    wildcard = OrderedDict()
+    for key, value in d.items():
+        for key1 in value['y'].keys():
+            wildcard[key1] = []
+    for key in wildcard:
+        values = path_with_wildcard(d, ["?", "y", key])
+        wildcard[key] = values.values()
+    return wildcard
+
+
+def sort_dictionary(d):
+    """
+    Sort a dictionary of lists by the average value of those lists.
+
+    Args:
+        d: the dictionary
+
+    Returns
+        an OrderedDict ordered by the average value of its elements.
+    """
+    ascending = OrderedDict()
+    means = OrderedDict()
+    for key, value in d.items():
+        means[key] = np.mean(list(value))
+    means = dict(sorted(means.items(), key=lambda item: item[1]))
+    for key, value in means.items():
+        ascending[key] = d[key]
+    return ascending
+
+
+def stackplot(data, xlabel, ylabel, outfile, xscale="linear", yscale="linear",
+              legend_outside=False, sort=True):
+    for key, value in data.items():
+        for key1, value1 in value.items():
+            if len(value1) == 1:
+                data[key][key1] = value1[0]
+    wildcard = transpose(data)
+    to_delete = []
+    for key, values in wildcard.items():
+        if None in values:
+            to_delete.append(key)
+    for key in to_delete:
+        del wildcard[key]
+    wildcard = sort_dictionary(wildcard)
+    # plot
+    xs = list(map(float, data.keys()))
+    fig, ax = plt.subplots()
+    if sort:
+        for key, value in wildcard.items():
+            xs, wildcard[key] = sort_together([xs, value])
+    ax.stackplot(list(xs), list(wildcard.values()),
+                 labels=list(wildcard.keys()))
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_xscale(xscale)
+    ax.set_yscale(yscale)
+    if legend_outside:
+        ax.legend(bbox_to_anchor=(1.04, 0.5), loc="center left", frameon=False)
+    else:
+        ax.legend()
+    plt.tight_layout
+    plt.savefig(outfile, bbox_inches="tight")
+
+
+def main(directory, matches, x, y, label, outfile, xscale, yscale,
+         legend_outside=False, stack=False):
+    """
+    Look through all the hpcbench json files in a directory, check that they
+    match the criterion specified, and extract the data that will be used,
+    then plot the results.
+
+    Args:
+        directory: the directory to look for the hpcbench json files in.
+        matches: a list of strings, each one specifying some criteria that the
+        json file has to match eg. ['foo:bar:baz=quux']
+        data: the dictionary produced by get_data, a dictionary indexed by
+        the label, with each entry being a dictionary with x and y values
+        x: a string of the same format specifying the location of the x values
+        e.g. foo:bar:baz
+        y: the same, for the y values
+        outfile: name of output file, a string
+        xscale: scale of the x-axis. can be 'linear', 'log', etc
+        xscale: scale of the y-axis. can be 'linear', 'log', etc
+        legend_outside: whether to put the legend outside the main plot
+        area. A boolean.
+    Returns:
+        A dictionary containing the results indexed by label, with each result
+        having a set of x and y values.
+    """
+    dicts = get_data(matches, x, y, label, directory, wildcard=True)
+    if outfile and type(y) == str:
+        plot(dicts, x.split(":")[-1], y.split(":")[-1], outfile, xscale,
+             yscale, legend_outside=legend_outside, stack=stack)
+    if outfile and type(y) == list:
+        stackplot(dicts, x.split(":")[-1], y.split(":")[-1], outfile, xscale,
+                  yscale, legend_outside=legend_outside, stack=stack)
+    return dicts
+
+
+def test():
+    """
+    A test function showing example values of all the params.
+    """
+    directory = "/home/rob/Downloads/testdata2/test2"
+    matches = ["meta:extra:Machine=JADE"]
+    x = "meta:slurm:gres"
+    y = "gromacs:Totals:Wall time (s)"
+    label = "gromacs:Totals:Atoms"
+    outfile = "test.pdf"
+    xscale = "log"
+    yscale = "log"
+    dicts = get_data(matches, x, y, label, directory, wildcard=True)
+    plot(dicts, x.split(":")[-1], y.split(":")[-1],
+         outfile, xscale, yscale)
+
+
+def test2():
+    directory = "/home/rob/Downloads/testdata2/test2"
+    matches = ["meta:extra:Machine=JADE", "meta:slurm:gres=gpu:1"]
+    x = "gromacs:Totals:Atoms"
+    y = "gromacs:Cycles:?:Wall time (s)"
+    label = "gromacs:Totals:Atoms"
+    outfile = "test.pdf"
+    xscale = "log"
+    yscale = "log"
+    dicts = get_data(matches, x, y, label, directory, wildcard=True)
+    stackplot(dicts, x.split(":")[-1], y.split(":")[-1],
+              outfile, xscale, yscale, legend_outside=True)
+
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    if args.y and len(args.y) == 1:
+        args.y = args.y[0]
+    dicts = main(args.directory, args.matching, args.x, args.y,
+                 args.label, args.outfile, args.xscale, args.yscale,
+                 args.outside)
