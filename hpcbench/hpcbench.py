@@ -148,7 +148,7 @@ tools.append({"Names": ["nvlog", "gpulog"],
               "Location": os.path.join(cwd, "logger", "gpulog.py"),
               "Help": "Log info from nvidia-smi to a json file"})
 
-tools.append({"Names": ["slurmlog", "slurm"],
+tools.append({"Names": ["slurmlog"],
               "Tags": ["logger"],
               "Location": os.path.join(cwd, "logger", "slurm.py"),
               "Help": "Convert SLURM parameters to a json file"})
@@ -183,6 +183,16 @@ tools.append({"Names": ["recrun"],
               "Location": os.path.join(cwd, "util", "recursive_run.sh"),
               "Help": "Run a script on every file with some filename"})
 
+tools.append({"Names": ["amberlog", "amblog"],
+              "Tags": ["logger"],
+              "Location": os.path.join(cwd, "logger", "amberlog.py"),
+              "Help": "Convert an amber md log to a json file"})
+
+tools.append({"Names": ["slurm"],
+              "Tags": ["prep", "scheduler"],
+              "Location": os.path.join(cwd, "schedulers", "slurm.py"),
+              "Help": "Manage submission of large numbers of SLURM jobs"})
+
 
 def entry_point():
     """
@@ -202,6 +212,15 @@ def entry_point():
         ignore = ["Coexistence", "PMFs", "Common", "System prep"]
         header_col = ""
         print(col("hpcbench version "+__version__ + ". ", _c.PURPLE))
+        log = filter_tag(tools, ["scheduler"], ignore_tags=ignore)
+        print_table(log, col_widths, header=col("Schedulers", header_col),
+                    colours=[_c.RED, "", ""])
+        print("")
+        log = filter_tag(tools, ["prep"], ignore_tags=ignore)
+        print_table(log, col_widths, header=col("System prep", header_col),
+                    colours=[_c.PURPLE, "", ""])
+        print("")
+
         log = filter_tag(tools, ["logger"], ignore_tags=ignore)
         print_table(log, col_widths, header=col("Logging", header_col),
                     colours=[_c.GREEN, "", ""])

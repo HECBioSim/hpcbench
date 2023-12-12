@@ -7,3 +7,4 @@ from . import slurm
 from . import sysinfo
 from . import syslog
 from . import util
+from . import amberlog

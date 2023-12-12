@@ -9,7 +9,7 @@ import json
 import time
 
 parser = argparse.ArgumentParser(
-    description="Write info from a slurm script to a json file")
+    description="Submit a list of slurm scripts and report the results")
 parser.add_argument("script", type=str, help="Path to submission script")
 parser.add_argument("output", type=str, help="Output json file")
 
@@ -28,6 +28,9 @@ def parse_submission_script(script):
             if line.startswith("gmx"):
                 output["program"] = "GROMACS"
                 output["arguments"] = line
+            # TODO here: make sure to get openmp parallelisation
+            # it might be eaiser to read this from OMP_NUM_THREADS and always
+            # use that instead of something like -ntomp
     output["date"] = time.time()
     return output
 
