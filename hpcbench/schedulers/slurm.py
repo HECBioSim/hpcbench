@@ -198,7 +198,6 @@ def process_queue(jobs, submit_freq=1):
         done = 1 - (jobs_running/len(submitted_ids))
         update_progress(done, bar_length=52, text="Finished")
         if jobs_running == 0:
-            print("Finished running.")
             break
         time.sleep(1)
     print(str(num_jobs)+" jobs to run, "+str(len(submitted_jobs))+" submitted")

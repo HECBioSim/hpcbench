@@ -193,6 +193,12 @@ tools.append({"Names": ["slurm"],
               "Location": os.path.join(cwd, "schedulers", "slurm.py"),
               "Help": "Manage submission of large numbers of SLURM jobs"})
 
+tools.append({"Names": ["makejob", "job"],
+              "Tags": ["prep"],
+              "Location": os.path.join(cwd, "systemprep", "make_job.py"),
+              "Help": "Create a job submission script from a template"})
+
+
 
 def entry_point():
     """
