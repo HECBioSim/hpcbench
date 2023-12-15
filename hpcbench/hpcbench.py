@@ -198,6 +198,10 @@ tools.append({"Names": ["makejob", "job"],
               "Location": os.path.join(cwd, "systemprep", "make_job.py"),
               "Help": "Create a job submission script from a template"})
 
+tools.append({"Names": ["makejobs", "jobs"],
+              "Tags": ["prep"],
+              "Location": os.path.join(cwd, "systemprep", "make_jobs.py"),
+              "Help": "Make many job submission scripts at once"})
 
 
 def entry_point():

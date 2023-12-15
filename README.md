@@ -3,7 +3,7 @@ A set of benchmarks for biomolecular simulation tools.
 ## Features
 - [X] Log and scrape data from running simulations
 - [X] Analyse performance, scaling, system utilisation, temperature, etc
-- [ ] Automatically generate and run benchmarks for different HPC systems and molecular simulation packages
+- [X] Automatically generate and run benchmarks for different HPC systems and molecular simulation packages
 - [ ] Built-in tests for correctness of benchmarked systems
 
 ## Current support
@@ -22,6 +22,10 @@ A set of benchmarks for biomolecular simulation tools.
     - [ ] COSMA
     - [ ] TURSA
     - [ ] ISAMBARD
+* Supported schedulers
+    - [X] SLURM
+    - [ ] SGE
+    - [ ] PBS/Torque
 
 ## How to use
 * Download or clone this repo
@@ -29,7 +33,7 @@ A set of benchmarks for biomolecular simulation tools.
 * Run `hpcbench` in the terminal for a list of tools. Run `hpcbench <toolname>` to run that tool.
 * `import hpcbench` in python for the API.
 
-### Example: hpcbench loggers to an existing simulation script
+### Example: attach hpcbench loggers to an existing simulation script
 The following HPC submission script has been modified to create cpu and gpu logs, as well as dump the sytem information, slurm parameters and gromacs log to json files. The call to `collate` merges all the json files together.
 ```bash
 #!/bin/bash
@@ -67,8 +71,12 @@ hpcbench extra -e "'Comment:example run'" -e "'Machine:JADE'" meta.json
 hpcbench collate -l sysinfo.json gpulog.json cpulog.json gromacs.json slurm.json meta.json -o jade_gromacs_20k_1gpu.json
 ```
 
+### Example: create and submit a large set of benchmark scripts from a template
+hpcbench can create many jobs at once using a job template, which is similar to the above job, but with certain variables (like the number of cpus and gpus) replaced with $-based substitutions.
+
+
 ### Example: plot results
-The following script 
+The following script searches through a directory for hpcbench output files matching the specified criteria, and plots the results. The values on the x and y axes are determined by the x and y parameters. The 'label' parameter works like the 'matching' parameters, but it will accept all values of that field, and assign each one a label on the resulting plot.
 
 ```bash
 # Plot scaling across number of GPUs
@@ -121,8 +129,8 @@ hpcbench logs \
 --outfile ~/Downloads/avg_gpu_usage.pdf
 ```
 
-### Example outputs
+## Example outputs
 todo
 
-### License
+## License
 AGPLv3

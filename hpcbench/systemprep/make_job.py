@@ -61,7 +61,7 @@ parser.add_argument("output", type=str, help="Output script file.")
 parser.add_argument("-p", "--prefix", type=str, nargs="+",
                     help="Add extra lines into the job script, before the MD "
                     "run. Call multiple times to add multiple lines.")
-parser.add_argument("-o", "--postfix", type=str, nargs="+",
+parser.add_argument("-f", "--postfix", type=str, nargs="+",
                     help="Add extra lines into the job script, after the MD "
                     "run. Call multiple times to add multiple lines.")
 
@@ -115,6 +115,27 @@ def fill_template(template_text, fill_dict):
     return substituted
 
 
+def read_template(template):
+    """
+    Read a job script template file, accepting an absolute path, or a path
+    relative to the hpcbench templates folder.
+
+    Args:
+        template: a string, either an absolute path to the template file or the
+        name of a file from the job_scripts folder in the hpcbench module.
+
+    Returns:
+        the template, as a python string template.
+    """
+    try:
+        with open(template, "r") as file:
+            template_text = Template(file.read())
+    except FileNotFoundError:
+        with open(str(templates_dir)+os.path.sep+template, "r") as file:
+            template_text = Template(file.read())
+    return template_text
+
+
 def make_job(template, output, substitutions, prefix=None, postfix=None):
     """
     For a given job script template (in the python string template format),
@@ -135,12 +156,7 @@ def make_job(template, output, substitutions, prefix=None, postfix=None):
     Returns:
         nothing, but writes out a file.
     """
-    try:
-        with open(template, "r") as file:
-            template_text = Template(file.read())
-    except FileNotFoundError:
-        with open(str(templates_dir)+os.path.sep+template, "r") as file:
-            template_text = Template(file.read())
+    template_text = read_template(template)
     template_filled = fill_template(template_text, substitutions)
     if prefix or postfix:
         template_filled = insert_fixes(
