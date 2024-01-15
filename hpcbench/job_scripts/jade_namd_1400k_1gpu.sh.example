@@ -1,0 +1,28 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --time=00:50:00
+#SBATCH --job-name=amb_1gpu_140ka
+#SBATCH --gres=gpu:2
+#SBATCH --ntasks=2
+#SBATCH --cpus-per-task=2
+#SBATCH --mail-type=NONE
+#SBATCH --mail-user=robert.welch@stfc.ac.uk
+#SBATCH --partition=devel
+
+module load namd/3.0-alpha7
+export PATH="/jmain02/home/J2AD004/sxk40/rxw76-sxk40/anaconda3/bin:$PATH"
+
+#hpcbench infolog sysinfo.json
+#hpcbench syslog -s /sys/class/hwmon/hwmon3/device/power1_average:power:1 -s /sys/class/hwmon/hwmon4/temp1_input:temp:0.001 syslog.json
+hpcbench gpulog gpulog.json & gpuid=$!
+hpcbench cpulog "'gmx mdrun -s benchmark.tpr'" cpulog.json & cpuid=$!
+
+namd3 +idlepoll +p 4 +devices 0 benchmark.in
+
+kill $gpuid
+kill $cpuid
+
+#hpcbench gmxlog md.log gromacs.json
+#hpcbench slurmlog jade_gromacs_20k_1gpu.sh slurm.json
+#hpcbench extra -e "'Comment:example run'" -e "'Machine:JADE'" meta.json
+#hpcbench collate -l sysinfo.json gpulog.json cpulog.json gromacs.json slurm.json meta.json -o jade_gromacs_20k_1gpu.json

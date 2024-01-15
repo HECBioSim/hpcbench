@@ -50,7 +50,8 @@ def col(text, col, cols=_c):
         return text
 
 
-def print_table(d, widths, colours=None, header=None, indentation=0):
+def print_table(d, widths, colours=None, header=None, indentation=0,
+                short=False):
     """
     Prints the table returned from filter_tag with nice colours and formatting.
 
@@ -66,6 +67,11 @@ def print_table(d, widths, colours=None, header=None, indentation=0):
     Returns:
         nothing. Prints the table.
     """
+    if short:
+        print(col(header, colours[0])+": "+", ".join([r[0] for r in d]),
+              end="")
+        return
+
     if (has_color is False or colours is None):
         colours = [""]*len(widths)
     table = ""
@@ -139,7 +145,7 @@ tools.append({"Names": ["extra"],
               "Help": "Write arbitrary info into a json file"})
 
 tools.append({"Names": ["gmxlog"],
-              "Tags": ["logger"],
+              "Tags": ["parser"],
               "Location": os.path.join(cwd, "logger", "gmxlog.py"),
               "Help": "Convert a gromacs md log to a json file"})
 
@@ -149,7 +155,7 @@ tools.append({"Names": ["nvlog", "gpulog"],
               "Help": "Log info from nvidia-smi to a json file"})
 
 tools.append({"Names": ["slurmlog"],
-              "Tags": ["logger"],
+              "Tags": ["parser"],
               "Location": os.path.join(cwd, "logger", "slurm.py"),
               "Help": "Convert SLURM parameters to a json file"})
 
@@ -184,9 +190,19 @@ tools.append({"Names": ["recrun"],
               "Help": "Run a script on every file with some filename"})
 
 tools.append({"Names": ["amberlog", "amblog"],
-              "Tags": ["logger"],
+              "Tags": ["parser"],
               "Location": os.path.join(cwd, "logger", "amberlog.py"),
               "Help": "Convert an amber md log to a json file"})
+
+tools.append({"Names": ["namdlog"],
+              "Tags": ["parser"],
+              "Location": os.path.join(cwd, "logger", "namdlog.py"),
+              "Help": "Convert namd stdout output to a json file"})
+
+tools.append({"Names": ["lmplog", "lammpslog"],
+              "Tags": ["parser"],
+              "Location": os.path.join(cwd, "logger", "lmplog.py"),
+              "Help": "Convert a lammps log file to a json file"})
 
 tools.append({"Names": ["slurm"],
               "Tags": ["prep", "scheduler"],
@@ -234,6 +250,12 @@ def entry_point():
         log = filter_tag(tools, ["logger"], ignore_tags=ignore)
         print_table(log, col_widths, header=col("Logging", header_col),
                     colours=[_c.GREEN, "", ""])
+
+        print("")
+
+        log = filter_tag(tools, ["parser"], ignore_tags=ignore)
+        print_table(log, col_widths, header=col("Parsers", header_col),
+                    colours=[_c.BLUE, "", ""])
         print("")
         plot = filter_tag(tools, ["plot"], ignore_tags=ignore)
         print_table(plot, col_widths, header=col("Plot", header_col),

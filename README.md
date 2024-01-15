@@ -9,9 +9,9 @@ A set of benchmarks for biomolecular simulation tools.
 ## Current support
 * Supported simulations
     - [X] GROMACS
-    - [ ] AMBER
+    - [X] AMBER
     - [ ] OpenMM
-    - [ ] NAMD
+    - [X] NAMD
     - [ ] LAMMPS
     - [ ] QM software (eventually!)
     - [ ] AI (eventually!)

@@ -19,6 +19,11 @@ import importlib
 import sys
 p = os.path
 
+# TODO: params can have default values which can be specified by a comment in
+# the bash script, these should be loaded automatically
+# also: would be good if you could provice multiple sets of extra files, and it
+# loops over all of them?
+
 all_schedulers = [x.name for x in iter_modules(hpcbench.schedulers.__path__)]
 
 parser = argparse.ArgumentParser(
