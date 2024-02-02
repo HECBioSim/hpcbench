@@ -10,15 +10,15 @@ A set of benchmarks for biomolecular simulation tools.
 * Supported simulations
     - [X] GROMACS
     - [X] AMBER
-    - [ ] OpenMM
+    - [X] OpenMM
     - [X] NAMD
-    - [ ] LAMMPS
+    - [X] LAMMPS
     - [ ] QM software (eventually!)
     - [ ] AI (eventually!)
     - [ ] At least one multiscale workflow (eventually!)
 * Supported HPC systems
     - [X] JADE
-    - [ ] ARCHER2
+    - [X] ARCHER2
     - [ ] COSMA
     - [ ] TURSA
     - [ ] ISAMBARD
@@ -72,8 +72,20 @@ hpcbench collate -l sysinfo.json gpulog.json cpulog.json gromacs.json slurm.json
 ```
 
 ### Example: create and submit a large set of benchmark scripts from a template
-hpcbench can create many jobs at once using a job template, which is similar to the above job, but with certain variables (like the number of cpus and gpus) replaced with $-based substitutions.
-
+hpcbench can create many jobs at once using a job template, which is similar to the above job, but with certain variables (like the number of cpus and gpus) replaced with $-based substitutions. Specifying multiple values will lead hpcbench to generate all possible combinations of those values.
+```bash
+hpcbench makejobs \
+-s jobname=test \
+-s num_gpus=gres:1,gres:2,gres:4,gres:8 \
+-s partition=small \
+-s benchmarkfile=benchmark.tpr \
+-s comment=test \
+-s machine=JADE \
+-s benchout=output \
+-e /home/rob/benchmarks/gromacs/20k-atoms/benchmark.tpr \
+-t jade_gromacs_gpu.sh \
+-o testgmgpu \
+```
 
 ### Example: plot results
 The following script searches through a directory for hpcbench output files matching the specified criteria, and plots the results. The values on the x and y axes are determined by the x and y parameters. The 'label' parameter works like the 'matching' parameters, but it will accept all values of that field, and assign each one a label on the resulting plot.
