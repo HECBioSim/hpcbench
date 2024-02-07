@@ -36,6 +36,8 @@ def bodge_numeric(s, try_datetime=True):
     Returns:
         The value, as an int or a float.
     """
+    if type(s) == int or type(s) == float:
+        return s
     if try_datetime:
         try:
             return bodge_timestamp(s)
@@ -75,6 +77,8 @@ def bodge_numeric_dict_wrapper(d):
         for key, value in d.items():
             rv[key] = bodge_numeric_dict_wrapper(value)
         return rv
+    if type(d) == float or type(d) == int:
+        return d
 
 
 def get_paths(directory, ext="json"):

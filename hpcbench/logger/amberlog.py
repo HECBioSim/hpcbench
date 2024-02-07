@@ -6,15 +6,18 @@ Parse AMBER log files and convert them to json files.
 
 import argparse
 import json
+from hpcbench.logger.crosswalk import standardise_totals
 
 parser = argparse.ArgumentParser(
     description="Get performance and system info from an AMBER log"
     " and write it to a json file")
 parser.add_argument("log", type=str, help="Path to AMBER mdout log file")
 parser.add_argument("output", type=str, help="Output json file")
+parser.add_argument("-k", "--keep", action='store_false',
+                    help="Keep original totals formatting")
 
 
-def parse_amber_log(logfile):
+def parse_amber_log(logfile, standardise=True):
     """
     Parse the contents of an AMBER log file and extract the performance info.
 
@@ -80,11 +83,15 @@ def parse_amber_log(logfile):
                     label = " ".join(line_fmt[prev:i])
                     prev = i+2
                     output["Totals"][label] = value
+        if "NATOM" in line:
+            output["Totals"]["Atoms"] = line.strip().split()[2]
+    if standardise:
+        output["Totals"] = standardise_totals(output["Totals"])
     return output
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    log = parse_amber_log(args.log)
+    log = parse_amber_log(args.log, args.keep)
     with open(args.output, "w") as outfile:
         json.dump(log, outfile, indent=4)

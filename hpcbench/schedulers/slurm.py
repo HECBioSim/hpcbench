@@ -17,17 +17,21 @@ parser.add_argument("-s", "--scripts", nargs="+", type=str,
                     help="A list of slurm scripts to submit.", required=True)
 parser.add_argument("-c", "--check", type=int, default=5,
                     help="How often to check slurm. Defaults to 5.")
+parser.add_argument("-b", "--nobar", type=int, default=5,
+                    help="Print progress as a value instead of a bar.")
 
 
-def update_progress(progress, bar_length=50, text="Progress"):
+def update_progress(progress, bar_length=50, text="Progress", bar=True):
     """
-    Print a progress bar.
+    Print a progress bar, or a progress string.
 
     Args:
         progress - a float between 0 and 1
         bar_length: length of the progress bar (characters), an int
         text: text to show before the progress bar.
     """
+    if not bar:
+        print("Progress: "+str(round(progress*100, 2))+"%")
     status = ""
     if isinstance(progress, int):
         progress = float(progress)
@@ -163,7 +167,7 @@ def process_queue(jobs, submit_freq=1):
     Args:
         jobs: a list of strings, which are paths to bash scripts to be
         submitted.
-        submit_freq: how many seconds to wait in between submitting jobs.
+        submit_freq: int, how many seconds to wait in between submitting jobs.
     Returns:
         Prints a report showing the status of submitted jobs and returns a
         dictionary with job scripts as keys and statuses as values.

@@ -6,15 +6,18 @@ Parses a GROMACS log file to extract performance and system info.
 
 import argparse
 import json
+from hpcbench.logger.crosswalk import standardise_totals
 
 parser = argparse.ArgumentParser(
     description="Get performance and system info from a GROMACS system log"
     " and write it to a json file")
 parser.add_argument("log", type=str, help="Path to GROMACS log file")
 parser.add_argument("output", type=str, help="Output json file")
+parser.add_argument("-k", "--keep", action='store_false',
+                    help="Keep original totals formatting")
 
 
-def parse_gmx_log(log):
+def parse_gmx_log(log, standardise=True):
     """Parse a gmx log file into a python dictionary.
     This function is a horrid mess, because gromacs log files are a horrid
     mess.
@@ -77,7 +80,6 @@ def parse_gmx_log(log):
                     cols.remove("%")
                     cols.remove("Computing:")
                     cols[cols.index("Flops")] = "% Flops"
-                    print("Mflop cols: "+str(cols))
                     continue
                 if "Total" in line:
                     output["Totals"]["Mflops"] = ' '.join(
@@ -94,6 +96,9 @@ def parse_gmx_log(log):
             if "Computing:" in line and "Giga-Cycles" in line:
                 parse_cycle_time = True
                 continue
+            if "Activity" in line and "Giga-Cycles" in line:
+                parse_cycle_time = True
+                continue
             if parse_cycle_time:
                 if "(s)" in line:
                     cols = ' '.join(line.strip().split()).split(" ")
@@ -102,7 +107,6 @@ def parse_gmx_log(log):
                     cols[cols.index("(s)")] = "Wall time (s)"
                     cols[cols.index("total")] = "Giga-cycles (total)"
                     cols[cols.index("%")] = "% Runtime"
-                    print("Cycle cols: "+str(cols))
                     continue
                 if "Total" in line:
                     totline = ' '.join(line.strip().split()).split(" ")
@@ -117,11 +121,17 @@ def parse_gmx_log(log):
                 label = rows.pop(0)
                 output["Cycles"][label] = {
                     cols[i]: rows[i] for i in range(len(rows))}
+            if "Performance:" in line:
+                perfline = line.strip().split()
+                output["Totals"]["ns/day"] = perfline[1]
+                output["Totals"]["hour/ns"] = perfline[2]
+    if standardise:
+        output["Totals"] = standardise_totals(output["Totals"])
     return output
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    log = parse_gmx_log(args.log)
+    log = parse_gmx_log(args.log, args.keep)
     with open(args.output, "w") as outfile:
         json.dump(log, outfile, indent=4)

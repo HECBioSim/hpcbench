@@ -30,5 +30,6 @@ setup(
     zip_safe=False,
     entry_points={
         'console_scripts': ['hpcbench=hpcbench.hpcbench:entry_point'],
-    }
+    },
+    install_requires=["matplotlib", "numpy", "glob2", "more-itertools"]
 )
