@@ -25,7 +25,8 @@ srun --distribution=block:block --hint=nomultithread --unbuffered --cpu-bind=cor
 
 ###POSTFIX
 kill £cpuid
-hpcbench namdlog md.log namd.json
+hpcbench sacct £SLURM_JOB_ID accounting.json
+hpcbench namdlog md.log run.json
 hpcbench slurmlog £0 slurm.json
 hpcbench extra -e "'Comment:$comment'" -e "'Machine:$machine'" meta.json
-hpcbench collate -l sysinfo.json namd.json slurm.json meta.json -o $benchout
+hpcbench collate -l sysinfo.json run.json accounting.json slurm.json meta.json -o $benchout

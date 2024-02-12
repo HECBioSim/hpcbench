@@ -13,8 +13,9 @@ A set of benchmarks for biomolecular simulation tools.
     - [X] OpenMM
     - [X] NAMD
     - [X] LAMMPS
-    - [ ] QM software (eventually!)
-    - [ ] AI (eventually!)
+    - [ ] QM software
+    - [ ] Cryo-EM software
+    - [ ] AI workflows
     - [ ] At least one multiscale workflow (eventually!)
 * Supported HPC systems
     - [X] JADE

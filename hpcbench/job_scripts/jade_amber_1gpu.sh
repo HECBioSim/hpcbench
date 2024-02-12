@@ -23,7 +23,8 @@ pmemd.cuda -O -i $benchmarkinfile -p $benchmarktopfile -c $benchmarkrstfile -ref
 ###POSTFIX
 kill £gpuid
 kill £cpuid
-hpcbench amberlog benchmark.mdout amber.json
+hpcbench sacct £SLURM_JOB_ID accounting.json
+hpcbench amberlog benchmark.mdout run.json
 hpcbench slurmlog £0 slurm.json
 hpcbench extra -e "'Comment:$comment'" -e "'Machine:$machine'" meta.json
-hpcbench collate -l sysinfo.json gpulog.json cpulog.json amber.json slurm.json meta.json -o $benchout
+hpcbench collate -l sysinfo.json gpulog.json cpulog.json accounting.json run.json slurm.json meta.json -o $benchout

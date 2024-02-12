@@ -25,7 +25,8 @@ srun --cpu-freq=2250000 --unbuffered --cpu-bind=cores --distribution=block:block
 
 ###POSTFIX
 kill £cpuid
-hpcbench gmxlog md.log gromacs.json
+hpcbench gmxlog md.log run.json
+hpcbench sacct £SLURM_JOB_ID accounting.json
 hpcbench slurmlog £0 slurm.json
 hpcbench extra -e "'Comment:$comment'" -e "'Machine:$machine'" meta.json
-hpcbench collate -l sysinfo.json gromacs.json slurm.json meta.json -o $benchout
+hpcbench collate -l sysinfo.json run.json accounting.json slurm.json meta.json -o $benchout

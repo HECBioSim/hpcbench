@@ -189,6 +189,11 @@ tools.append({"Names": ["recrun"],
               "Location": os.path.join(cwd, "util", "recursive_run.sh"),
               "Help": "Run a script on every file with some filename"})
 
+tools.append({"Names": ["insert"],
+              "Tags": ["util"],
+              "Location": os.path.join(cwd, "util", "updatejson.py"),
+              "Help": "Insert object(s) from one json file into another"})
+
 tools.append({"Names": ["amberlog", "amblog"],
               "Tags": ["parser"],
               "Location": os.path.join(cwd, "logger", "amberlog.py"),
@@ -219,6 +224,16 @@ tools.append({"Names": ["makejobs", "jobs"],
               "Location": os.path.join(cwd, "systemprep", "make_jobs.py"),
               "Help": "Make many job submission scripts at once"})
 
+tools.append({"Names": ["sacct"],
+              "Tags": ["parser"],
+              "Location": os.path.join(cwd, "schedulers", "sacct.py"),
+              "Help": "Write sacct info into a json file"})
+
+tools.append({"Names": ["table"],
+              "Tags": ["plot"],
+              "Location": os.path.join(cwd, "plot", "table.py"),
+              "Help": "TODO"})
+
 
 def entry_point():
     """
@@ -237,7 +252,7 @@ def entry_point():
         col_widths = [10, 68, 20]
         ignore = ["Coexistence", "PMFs", "Common", "System prep"]
         header_col = ""
-        print(col("hpcbench version "+__version__ + ". ", _c.PURPLE))
+        print("hpcbench version "+__version__ + ". ", _c.PURPLE)
         log = filter_tag(tools, ["scheduler"], ignore_tags=ignore)
         print_table(log, col_widths, header=col("Schedulers", header_col),
                     colours=[_c.RED, "", ""])

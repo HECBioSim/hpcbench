@@ -24,7 +24,8 @@ gmx mdrun -s $benchmarkfile -ntomp 10 -nb gpu -pme gpu -bonded gpu -dlb no -nstl
 ###POSTFIX
 kill £gpuid
 kill £cpuid
-hpcbench gmxlog md.log gromacs.json
+hpcbench sacct £SLURM_JOB_ID accounting.json
+hpcbench gmxlog md.log run.json
 hpcbench slurmlog £0 slurm.json
 hpcbench extra -e "'Comment:$comment'" -e "'Machine:$machine'" meta.json
-hpcbench collate -l sysinfo.json gpulog.json cpulog.json gromacs.json slurm.json meta.json -o $benchout
+hpcbench collate -l sysinfo.json gpulog.json cpulog.json accounting.json run.json slurm.json meta.json -o $benchout
