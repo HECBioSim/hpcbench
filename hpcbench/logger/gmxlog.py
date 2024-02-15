@@ -42,11 +42,18 @@ def parse_gmx_log(log, standardise=True):
             if "There are:" in line:
                 output["Totals"]["Atoms"] = line.strip().split(" ")[2]
             if "dt" in line and "=" in line:
-                output["Totals"]["Timestep"] = ''.join(
-                    line.strip().split()).split("=")[1]
+                output["Totals"]["Timestep (ns)"] = str(float(''.join(
+                    line.strip().split()).split("=")[1]) * 0.001)
             if "nsteps" in line:
-                output["Totals"]["Steps"] = ''.join(
+                output["Totals"]["Number of steps"] = ''.join(
                     line.strip().split()).split("=")[1]
+                if "Timestep (ns)" in output["Totals"]:
+                    output["Totals"]
+            if "Number of steps" in output["Totals"] and \
+            "Timestep (ns)" in output["Totals"]:
+                output["Totals"]["Simulation time (ns)"] = str(float(
+                    output["Totals"]["Timestep (ns)"]) * \
+                    int(output["Totals"]["Number of steps"]))
             # Parse GMX info
             if "GROMACS version:" in line and not parse_gmx_info:
                 parse_gmx_info = True
@@ -125,6 +132,8 @@ def parse_gmx_log(log, standardise=True):
                 perfline = line.strip().split()
                 output["Totals"]["ns/day"] = perfline[1]
                 output["Totals"]["hour/ns"] = perfline[2]
+    output["Totals"]["step/s"] = int(output["Totals"]["Number of steps"]) / \
+        float(output["Totals"]["Wall time (s)"])
     if standardise:
         output["Totals"] = standardise_totals(output["Totals"])
     return output

@@ -59,6 +59,11 @@ def parse_namd_log(filename, standardise=True):
             startup_time = find_in_line(line, "at", 1)
         if "ATOMS" in line:
             atoms = find_in_line(line, "ATOMS", -1)
+        if "Running for" in line:
+            steps = find_in_line(line, "steps", -1)
+        if "TIMESTEP" in line and "LDB" not in line:
+            timestep = str(float(find_in_line(line, "TIMESTEP", 1))/1e6)
+    simtime = str(float(timestep) * int(steps))
     nsperday = sum(map(float, nsperday))/len(nsperday)
     sperstep = sum(map(float, sperstep))/len(sperstep)
     stepspers = 1/sperstep
@@ -71,7 +76,10 @@ def parse_namd_log(filename, standardise=True):
         "Wall Clock Time including setup (s)": str(wallclock_time),
         "Wall Clock Time (s)": str(walltime_nosetup),
         "Setup time": startup_time,
-        "Atoms": atoms
+        "Atoms": atoms,
+        "Number of steps": steps,
+        "Timestep (ns)": timestep,
+        "Simulation time (ns)": simtime
         }}
     if standardise:
         output["Totals"] = standardise_totals(output["Totals"])

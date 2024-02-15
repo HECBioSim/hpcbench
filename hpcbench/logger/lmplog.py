@@ -32,9 +32,10 @@ def parse_lammps_log(log, standardise=True):
     stepss = []
     times = []
     breakdowns = []
+    timesteps = []
+    totalsteps = []
     in_bd = False
     breakdowns = []
-    in_bd = False
     with open(log, "r") as file:
         for line in file:
             line = " ".join(line.split())
@@ -63,11 +64,23 @@ def parse_lammps_log(log, standardise=True):
                 stepss.append(steps)
                 time = line[line.index("of")+1]
                 times.append(time)
+            if "timestep" in line and "Performance" not in line:
+                line = line.strip('\n').split()
+                timestep = line[1]
+                timesteps.append(timestep)
+            if "Run" in line and "@" not in line:
+                line = line.strip('\n').split()
+                run = line[1]
+                totalsteps.append(run)
             if "ERROR:" in line:
                 raise IOError("Logfile contains error!")
-        for total, natoms, nsteps, time in zip(totals, atoms, stepss, times):
-            total["Atoms"] = natoms
-            total["Wall Clock Time (s)"] = time
+        for total, natoms, nsteps, time, timestep in zip(totals, atoms, stepss, times, timesteps):
+            total["Atoms"] = int(natoms)
+            total["Wall Clock Time (s)"] = float(time)
+            total["Number of steps"] = int(nsteps)
+            total["Timestep (ns)"] = float(timestep) * 1e-6
+            total["Simulation time (ns)"] = float(
+                timestep) * 1e-6 * int(nsteps)
         breakdowns_list = []
         for breakdown in breakdowns:
             breakdown_dict = {}
@@ -84,7 +97,7 @@ def parse_lammps_log(log, standardise=True):
         output["Totals"] = totals
         output["Breakdowns"] = breakdowns_list
     if standardise:
-        output["Totals"] = standardise_totals(output["Totals"])
+        output["Totals"] = standardise_totals(output["Totals"][-1])
     return output
 
 

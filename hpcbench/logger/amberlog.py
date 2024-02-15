@@ -85,6 +85,12 @@ def parse_amber_log(logfile, standardise=True):
                     output["Totals"][label] = value
         if "NATOM" in line:
             output["Totals"]["Atoms"] = line.strip().split()[2]
+        if 'nstlim' in output['Infile']:
+            output['Totals']['Number of steps'] = output['Infile']['nstlim']
+            output['Totals']['Simulation time (ns)'] = str( 0.001 * int(
+                output['Infile']['nstlim'])*float(output['Infile']['dt']))
+            output['Totals']['Timestep (ns)'] = str(
+                float(output['Infile']['dt']) / 1000)
     if standardise:
         output["Totals"] = standardise_totals(output["Totals"])
     return output

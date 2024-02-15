@@ -7,7 +7,7 @@ import argparse
 import json
 import subprocess
 
-default_format_string="ConsumedEnergyRaw,CPUTimeRAW,NodeList,ElapsedRaw"
+default_format_string="ConsumedEnergyRaw,CPUTimeRAW,NodeList,ElapsedRaw,JobID"
 
 parser = argparse.ArgumentParser(description="Get output from sacct for a"
                                  " given job and save it to a json file.")
@@ -17,11 +17,19 @@ parser.add_argument("-f", "--format", type=str, default=default_format_string,
 parser.add_argument("output", type=str, help="json file to be written into")
 
 
-a="""ConsumedEnergyRaw|CPUTimeRAW|NodeList|ElapsedRaw|
-|2004|dgk119|501|
-102378|2004|dgk119|501|"""
-
 def get_sacct(jobid, formatstring = default_format_string):
+    """
+    Get results from sacct in a python dictionary.
+    
+    Args:
+        jobid: the id of the job.
+        formatstring: a comma-delimited sacct format string (see sacct's help
+        for more info)
+    
+    Returs:
+        a dictionary containing values. If there are multiple entries per
+        job id, the first available entry is used.
+    """
     pwrout = subprocess.run(
         ['sacct', '-j', str(jobid), '--format='+formatstring,"-P"],
         capture_output=True, text=True).stdout.strip()

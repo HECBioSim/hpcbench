@@ -45,6 +45,9 @@ def bodge_numeric(s, try_datetime=True):
             pass
         except TypeError:
             pass
+    if "e" in s:
+        if len(s.split("e")) == 2:
+            return float(s)
     string = re.sub("[^-?\d\.]", "", s)
     val = literal_eval(string)
     is_int = isinstance(val, int) or (

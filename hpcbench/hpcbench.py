@@ -209,6 +209,11 @@ tools.append({"Names": ["lmplog", "lammpslog"],
               "Location": os.path.join(cwd, "logger", "lmplog.py"),
               "Help": "Convert a lammps log file to a json file"})
 
+tools.append({"Names": ["ommlog", "openmmlog"],
+              "Tags": ["parser"],
+              "Location": os.path.join(cwd, "logger", "ommlog.py"),
+              "Help": "Tidy up openmm benchmark output"})
+
 tools.append({"Names": ["slurm"],
               "Tags": ["prep", "scheduler"],
               "Location": os.path.join(cwd, "schedulers", "slurm.py"),
@@ -228,6 +233,16 @@ tools.append({"Names": ["sacct"],
               "Tags": ["parser"],
               "Location": os.path.join(cwd, "schedulers", "sacct.py"),
               "Help": "Write sacct info into a json file"})
+
+tools.append({"Names": ["crosswalk"],
+              "Tags": ["util"],
+              "Location": os.path.join(cwd, "logger", "crosswalk.py"),
+              "Help": "Convert benchmark output files to a standard format"})
+
+tools.append({"Names": ["stall"],
+              "Tags": ["util"],
+              "Location": os.path.join(cwd, "util", "stall.sh"),
+              "Help": "Sleep until a specified job is finished"})
 
 tools.append({"Names": ["table"],
               "Tags": ["plot"],
