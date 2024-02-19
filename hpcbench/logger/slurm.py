@@ -25,8 +25,23 @@ def parse_submission_script(script):
                 output["slurm"][param[0]] = param[1]
             if "module" in line:
                 output["modules"].append(line.split(" ")[2])
-            if line.startswith("gmx"):
+            if "gmx" in line:
                 output["program"] = "GROMACS"
+                output["arguments"] = line
+            if "benchmark.py" in line:
+                output["program"] = "OpenMM"
+                output["arguments"] = line
+            if "namd3" in line:
+                output["program"] = "namd3"
+                output["arguments"] = line
+            if "namd" in line:
+                output["program"] = "namd2"
+                output["arguments"] = line
+            if "pmemd" in line:
+                output["program"] = "AMBER"
+                output["arguments"] = line
+            if "lmp" in line:
+                output["program"] = "LAMMPS"
                 output["arguments"] = line
             # TODO here: make sure to get openmp parallelisation
             # it might be eaiser to read this from OMP_NUM_THREADS and always

@@ -231,7 +231,7 @@ tools.append({"Names": ["makejobs", "jobs"],
 
 tools.append({"Names": ["sacct"],
               "Tags": ["parser"],
-              "Location": os.path.join(cwd, "schedulers", "sacct.py"),
+              "Location": os.path.join(cwd, "logger", "sacct.py"),
               "Help": "Write sacct info into a json file"})
 
 tools.append({"Names": ["crosswalk"],

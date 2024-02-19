@@ -18,6 +18,7 @@ from pkgutil import iter_modules
 import importlib
 import sys
 p = os.path
+import secrets
 
 # TODO: params can have default values which can be specified by a comment in
 # the bash script, these should be loaded automatically
@@ -45,13 +46,13 @@ parser.add_argument("-t", "--template", type=str,
                     help="Input template file")
 parser.add_argument("-o", "--output", type=str,
                     help="Output directory name.")
-parser.add_argument("-p", "--prefix", type=str, nargs="+",
+parser.add_argument("-p", "--prefix", type=str, action="append",
                     help="Add extra lines into the job script, before the MD "
                     "run. Call multiple times to add multiple lines.")
-parser.add_argument("-f", "--postfix", type=str, nargs="+",
+parser.add_argument("-f", "--postfix", type=str, action="append",
                     help="Add extra lines into the job script, after the MD "
                     "run. Call multiple times to add multiple lines.")
-parser.add_argument("-e", "--extra", type=str, nargs="+",
+parser.add_argument("-e", "--extra", type=str, action="append",
                     help="Extra files to include with the job script, e.g. "
                     "input and structure files. Call multiple  times to"
                     " include multiple files.")
@@ -86,7 +87,7 @@ def combine_values(jobparams):
     return jobs
 
 
-def make_name(job, name_list, use_key=False):
+def make_name(job, name_list, use_key=False, random=0):
     """
     Set the name for a HPC job script/folder.
 
@@ -100,6 +101,8 @@ def make_name(job, name_list, use_key=False):
     Returns:
         the name, a string.
     """
+    if random:
+        return secrets.token_hex(random)
     name = ""
     for key, value in job.items():
         if not use_key:
@@ -158,12 +161,17 @@ def make_jobs(jobparams, template, outdir, extrafiles=[],
     job_paths = []
     for job in jobs:
         curr_dir = make_name(job, name)
-        os.mkdir(outdir+p.sep+curr_dir)
-        job_path = outdir+p.sep+curr_dir+p.sep+curr_dir+".sh"
+        if len(jobs) == 1:
+            job_path = outdir+p.sep+curr_dir+".sh"
+            copy_to = outdir
+        else:
+            os.mkdir(outdir+p.sep+curr_dir)
+            job_path = outdir+p.sep+curr_dir+p.sep+curr_dir+".sh"
+            copy_to = outdir+p.sep+curr_dir
         job_paths.append(job_path)
         make_job(template, job_path, job, prefix=prefix, postfix=postfix)
         for file in extrafiles:
-            shutil.copyfile(file, outdir+p.sep+curr_dir+p.sep+p.basename(file))
+            shutil.copyfile(file, copy_to+p.sep+p.basename(file))
     return job_paths
 
 

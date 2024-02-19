@@ -66,8 +66,7 @@ def plot(data, xlabel, ylabel, outfile, xscale="linear", yscale="linear",
         x, y = value['x'], value['y']
         if sort:
             x, y = sort_together([x, y])
-        else:
-            ax.plot(x, y, label=key)
+        ax.plot(x, y, label=key)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_xscale(xscale)
@@ -184,7 +183,7 @@ def main(directory, matches, x, y, label, outfile, xscale, yscale,
     dicts = get_data(matches, x, y, label, directory, wildcard=True)
     if outfile and type(y) == str:
         plot(dicts, x.split(":")[-1], y.split(":")[-1], outfile, xscale,
-             yscale, legend_outside=legend_outside, stack=stack)
+             yscale, legend_outside=legend_outside)
     if outfile and type(y) == list:
         stackplot(dicts, x.split(":")[-1], y.split(":")[-1], outfile, xscale,
                   yscale, legend_outside=legend_outside, stack=stack)

@@ -97,7 +97,10 @@ def parse_lammps_log(log, standardise=True):
         output["Totals"] = totals
         output["Breakdowns"] = breakdowns_list
     if standardise:
-        output["Totals"] = standardise_totals(output["Totals"][-1])
+        if len(output["Totals"]) > 1:
+            output["Totals"] = standardise_totals(output["Totals"][-1])
+        else:
+            output["Totals"] = standardise_totals(output["Totals"][0])
     return output
 
 

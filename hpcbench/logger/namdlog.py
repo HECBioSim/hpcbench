@@ -57,7 +57,7 @@ def parse_namd_log(filename, standardise=True):
             cpu_time = find_in_line(line, "CPUTime:", 1)
         if "Finished startup" in line:
             startup_time = find_in_line(line, "at", 1)
-        if "ATOMS" in line:
+        if "ATOMS" in line and len(line.split(" ") == 3):
             atoms = find_in_line(line, "ATOMS", -1)
         if "Running for" in line:
             steps = find_in_line(line, "steps", -1)
