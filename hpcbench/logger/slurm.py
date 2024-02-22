@@ -22,7 +22,10 @@ def parse_submission_script(script):
             line = line.strip().replace("/n", "")
             if "#SBATCH" in line:
                 param = line.split(" ")[1].replace("--", "").split("=")
-                output["slurm"][param[0]] = param[1]
+                if len(param) > 1:
+                    output["slurm"][param[0]] = param[1]
+                else:
+                    output["slurm"][param[0]] = True
             if "module" in line:
                 output["modules"].append(line.split(" ")[2])
             if "gmx" in line:

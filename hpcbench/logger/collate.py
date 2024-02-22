@@ -7,6 +7,7 @@ Combine together multiple json files.
 import json
 import argparse
 import os
+import hpcbench
 
 parser = argparse.ArgumentParser(description="Combine json files.")
 parser.add_argument('-l', '--list', nargs='+',
@@ -16,8 +17,6 @@ parser.add_argument('-s', '--save', action="store_true",
                     help='Save original output files (normally deleted)')
 
 
-__version__ = 0.1  # eventually this will be a module property
-
 if __name__ == "__main__":
     args = parser.parse_args()
     output = {}
@@ -26,6 +25,6 @@ if __name__ == "__main__":
             output[jsonfile.replace(".json", "")] = json.load(file)
         if not args.save:
             os.remove(jsonfile)
-        output['version'] = __version__
+        output['version'] = hpcbench.__version__
     with open(args.output, "w") as outfile:
         json.dump(output, outfile, indent=4)

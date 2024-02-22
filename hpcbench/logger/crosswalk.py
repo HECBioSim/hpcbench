@@ -10,6 +10,8 @@ import copy
 import json
 import argparse
 from hpcbench.logger import sacct
+import os
+import glob
 
 parser = argparse.ArgumentParser(
     description="Convert output from MD software (or othere simulations) to a"
@@ -26,26 +28,20 @@ parser.add_argument("-t", "--totals", type=str, default="run",
                     ": to represent nesting, e.g. loc1:loc2.")
 
 
-totals = {
-        "Atoms": "2997924",
-        "Elapsed(s)": "2366.06",
-        "Per Step(ms)": "236.61",
-        "ns/day": "0.73",
-        "seconds/ns": "118302.93"
-}
-
 # these are useful, i might put them in a util.py
+
+
 def dget(dct, keys):
     for key in keys:
         dct = dct[key]
     return dct
+
 
 def dset(dct, keys, value):
     for key in keys[:-1]:
         dct = dct.setdefault(key, {})
     dct[keys[-1]] = value
 
-# TODO: add energy use: kwh/ns, kwh/step, kwh total, kwh/step/atom
 
 unitlookup = {
     "Wall time (s)": s,
@@ -125,39 +121,57 @@ standard_original = {
     "J/step": None,
 }
 
-def standardise_totals(totals, get_accounting="accounting.json"):
+
+def standardise_totals(totals, get_accounting="accounting.json", infile=None):
     """
     Rename quantities from a hpcbench output file to have standard names and
     units.
-    
+
     Params:
         totals: the 'Totals' block from a hpcbench output file, a dictionary.
         accounting: a string, either the location of the 'accounting' file
         produced by hpcbench sacct, or the job id, to get a new accounting file
+        infile: location of the input file. Useful to try and obtain
+        accounting info if it can't be found in accounting.json.'
     Returns:
         The same block, with standardised names and units.
     """
     standard = copy.copy(standard_original)
     totals = bodge_numeric_dict_wrapper(totals)
 
-    # On some systems, slurm will not reveal the consumed energy until the job
-    # is finished - in these cases we get the energy again
+    # Get accounting info - this is messy because it needs a lot of fallbacks
+    # for different scenarios, e.g. when the accounting data in the json file
+    # doesn't exist or is incomplete
     if get_accounting:
         try:
-            with open(get_accounting, "r") as file:
+            with open(get_accounting, "r") as file:  # accounting file is given
                 accounting = json.load(file)
             if "ConsumedEnergyRaw" in accounting:
-                if accounting["ConsumedEnergyRaw"] == "0" \
-                or accounting["ConsumedEnergyRaw"] == 0:
+                if accounting["ConsumedEnergyRaw"] == "0" or accounting[
+                        "ConsumedEnergyRaw"] == 0:
                     accounting = sacct.get_sacct(accounting["JobID"])
                     with open(get_accounting, "w") as file:
                         json.dump(accounting, file, indent=4)
                 totals["Consumed Energy (J)"] = float(
                     accounting["ConsumedEnergyRaw"])
         except FileNotFoundError:
-            accounting = sacct.get_sacct(get_accounting)
-            totals["Consumed Energy (J)"] = float(
-                accounting["ConsumedEnergyRaw"])
+            if "." not in get_accounting:  # job id is provided directly
+                accounting = sacct.get_sacct(get_accounting)
+                totals["Consumed Energy (J)"] = float(
+                    accounting["ConsumedEnergyRaw"])
+            else:
+                folder = os.path.dirname(infile)
+                matching = glob.glob(folder+os.path.sep+"slurm-"+"*")
+                if len(matching) == 0:
+                    folder = os.getcwd()
+                    matching = glob.glob(folder+os.path.sep+"slurm-"+"*")
+                slurmids = []
+                for file in matching:
+                    slurmids.append(file.split("-")[-1].split(".")[0])
+                slurmid = max(slurmids)
+                accounting = sacct.get_sacct(slurmid)
+                totals["Consumed Energy (J)"] = float(
+                    accounting["ConsumedEnergyRaw"])
 
     # Identify names and units of quantities
     for name, value in totals.items():
@@ -172,23 +186,22 @@ def standardise_totals(totals, get_accounting="accounting.json"):
         unitless = standard["ns/day"] / (ns/day)
         converted = unitless / (day/s)
         standard["ns/s"] = converted * ns/s
-    
+
     if standard["step/s"] is None and standard["Wall Clock Time (s)"]:
         if 'Steps' in totals:
             standard["step/s"] = totals['Steps'] / \
                 standard["Wall Clock Time (s)"]
-    
+
     # If 'consumed energy' is populated, add energy/ns and energy/step
-    isset = lambda n : n != 0 and n != None
-    if not isset(standard["J/ns"]) and standard["Simulation time (ns)"] \
-        is not None and get_accounting:
+    def isset(n): return n != 0 and n is not None
+    if not isset(standard["J/ns"]) and standard[
+            "Simulation time (ns)"] is not None and get_accounting:
         standard["J/ns"] = standard["Consumed Energy (J)"] / \
             standard["Simulation time (ns)"]
-    if not isset(standard["J/step"]) and standard["Number of steps"] \
-        is not None and get_accounting:
+    if not isset(standard["J/step"]) and standard[
+            "Number of steps"] is not None and get_accounting:
         standard["J/step"] = standard["Consumed Energy (J)"] / \
             standard["Number of steps"]
-
 
     # Set missing values of reciprocals
     for name, value in standard.items():
@@ -197,16 +210,17 @@ def standardise_totals(totals, get_accounting="accounting.json"):
                 backwards = "/".join(list(reversed(name.split("/"))))
                 if backwards in standard and standard[backwards] is not None:
                     standard[name] = 1/standard[backwards]
-    
+
     # Give quantities back in real units
     for key, value in standard.items():
-            try:
-                standard[key] = (value / unitlookup[key])
-            except TypeError as e:
-                print("No unit for "+str(key))
-                raise e
-    
+        try:
+            standard[key] = (value / unitlookup[key])
+        except TypeError as e:
+            print("No unit for "+str(key))
+            raise e
+
     return standard
+
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -215,13 +229,16 @@ if __name__ == "__main__":
     if ":" in args.totals:
         locs = args.totals.split(":")
         totals = dget(benchout, locs)
-        totals = standardise_totals(totals, get_accounting=args.accounting)
+        totals = standardise_totals(totals, get_accounting=args.accounting,
+                                    infile=args.input)
         dset(benchout, locs, totals)
     elif args.totals in benchout:
         totals = benchout[args.totals]
-        totals = standardise_totals(totals, get_accounting=args.accounting)
+        totals = standardise_totals(totals, get_accounting=args.accounting,
+                                    infile=args.input)
         benchout[args.totals] = totals
     else:
-        benchout = standardise_totals(benchout, get_accounting=args.accounting)
+        benchout = standardise_totals(benchout, get_accounting=args.accounting,
+                                      infile=args.input)
     with open(args.output, "w") as outfile:
         json.dump(benchout, outfile, indent=4)

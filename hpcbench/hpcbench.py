@@ -4,7 +4,7 @@
 hpcbench cli launcher utility
 """
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 import sys
 import os
@@ -107,7 +107,7 @@ def filter_tag(tools, tags, add_tags=False, ignore_tags=[]):
         filtered_table, a list of lists, where the first index is the column
         of the table and the second is the row.
     """
-    if type(tags) != list:
+    if type(tags) is not list:
         tags = [tags]
     filtered_table = []
     for tool in tools[:]:
@@ -186,7 +186,7 @@ tools.append({"Names": ["findjob"],
 
 tools.append({"Names": ["recrun"],
               "Tags": ["util"],
-              "Location": os.path.join(cwd, "util", "recursive_run.sh"),
+              "Location": os.path.join(cwd, "util", "recrun.py"),
               "Help": "Run a script on every file with some filename"})
 
 tools.append({"Names": ["insert"],

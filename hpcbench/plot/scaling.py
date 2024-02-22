@@ -181,10 +181,10 @@ def main(directory, matches, x, y, label, outfile, xscale, yscale,
         having a set of x and y values.
     """
     dicts = get_data(matches, x, y, label, directory, wildcard=True)
-    if outfile and type(y) == str:
+    if outfile and type(y) is str:
         plot(dicts, x.split(":")[-1], y.split(":")[-1], outfile, xscale,
              yscale, legend_outside=legend_outside)
-    if outfile and type(y) == list:
+    if outfile and type(y) is list:
         stackplot(dicts, x.split(":")[-1], y.split(":")[-1], outfile, xscale,
                   yscale, legend_outside=legend_outside, stack=stack)
     return dicts
