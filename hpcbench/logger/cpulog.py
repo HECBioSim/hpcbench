@@ -9,6 +9,7 @@ import subprocess
 import time
 from hpcbench.logger.util import GracefulKiller
 import json
+import os
 
 parser = argparse.ArgumentParser(
     description="Log the CPU usage of a particular process to a json file.")
@@ -17,6 +18,7 @@ parser.add_argument("process", type=str,
 parser.add_argument("output", type=str, help="Output json file")
 parser.add_argument("-i", "--interval", type=int, default=5,
                     help="How often to log. Defaults to 1.")
+parser.add_argument("-p", "--pid", type=str, help="Write PID to a file")
 
 
 def log_cpu(progname, killer, output, for_time=1e30, interval=5):
@@ -56,6 +58,9 @@ def log_cpu(progname, killer, output, for_time=1e30, interval=5):
 
 if __name__ == "__main__":
     args = parser.parse_args()
+    if args.pid:
+        with open(args.pid, "w") as file:
+            file.write(str(os.getpid()))
     killer = GracefulKiller()
     with open(args.output, "w") as outfile:
         cpulog = log_cpu(args.process, killer, args.output,

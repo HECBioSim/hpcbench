@@ -8,17 +8,26 @@ import argparse
 import asyncio
 import json
 from hpcbench.logger.util import GracefulKiller, cat
+import os
 
 parser = argparse.ArgumentParser(
     description="Log info from a specified location in /sys/ to a json file.")
-parser.add_argument("output", type=str, help="Output json file")
+parser.add_argument("-o", "--output", type=str, help="Output json file")
 parser.add_argument("-i", "--interval", type=int, default=5,
                     help="How often to log. Defaults to 1.")
+parser.add_argument("-t", "--total", type=str, action="append",
+                    help="Integrate value and store the total (argument is the"
+                    " label). E.g. if you're logging the power in W you can "
+                    "record the total energy used. Can use multiple arguments"
+                    " for multiple /sys/ log labels labels.")
 parser.add_argument("-s", "--sys", type=str, action="append",
                     help="""Log something from /sys. Of the format
                     '/path:label:factor' where path is the path of the thing to
                     log, label is the name of the thing, and factor is a
-                    multiplication factor (e.g. for converting units).""")
+                    multiplication factor (e.g. for converting units). Can use
+                    multiple arguments for multiple logs e.g.
+                    -s /sys/log1:label1:1 -s /sys/log2:label2:1""")
+parser.add_argument("-p", "--pid", type=str, help="Write PID to a file")
 
 
 async def log_sys(path, factor, killer, for_time=1e30, interval=5):
@@ -68,9 +77,35 @@ async def make_logs(sys, interval, killer):
         logs[label] = log.result()
     return logs
 
+
+def integrate(values, interval):
+    """
+    Very very dumb numerical integral.
+
+    Args:
+        values: a list of values for y
+        interval: the x interval beween values
+
+    Returns:
+        The integral
+    """
+    integral = 0
+    for value in values:
+        integral += value * interval
+    return integral
+
+
 if __name__ == "__main__":
     args = parser.parse_args()
+    if args.pid:
+        with open(args.pid, "w") as file:
+            file.write(str(os.getpid()))
     killer = GracefulKiller()
     logs = asyncio.run(make_logs(args.sys, args.interval, killer))
+    if args.total:
+        logs["Totals"] = {}
+        for log, label in zip(args.sys, args.total):
+            logs["Totals"][label] = integrate(logs[log.split(":")[1]],
+                                              args.interval)
     with open(args.output, "w") as outfile:
         json.dump(logs, outfile, indent=4)

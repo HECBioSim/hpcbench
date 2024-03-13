@@ -10,6 +10,7 @@ import subprocess
 import time
 from hpcbench.logger.util import GracefulKiller, exists, parse_smi
 import sys
+import os
 
 SMI_COLS = "timestamp,pstate,clocks_throttle_reasons.hw_slowdown," \
     "temperature.gpu,fan.speed,utilization.gpu,utilization.memory," \
@@ -23,6 +24,7 @@ parser.add_argument("-i", "--interval", type=int, default=5,
                     help="How often to log. Defaults to 1.")
 parser.add_argument("-c", "--cols", type=str, default=SMI_COLS,
                     help="Which columns from nvidia-smi to run.")
+parser.add_argument("-p", "--pid", type=str, help="Write PID to a file")
 
 
 def log_smi(killer, for_time, smi_command=SMI_COMMAND, interval=5, write=None):
@@ -58,6 +60,9 @@ if __name__ == "__main__":
     if not exists("nvidia-smi"):
         print("nvidia-smi not detected, exiting...")
         sys.exit(1)
+    if args.pid:
+        with open(args.pid, "w") as file:
+            file.write(str(os.getpid()))
     killer = GracefulKiller()
     logs = log_smi(killer, 1e30, interval=args.interval, write=args.output)
     with open(args.output, "w") as outfile:

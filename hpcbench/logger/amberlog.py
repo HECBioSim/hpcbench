@@ -15,14 +15,21 @@ parser.add_argument("log", type=str, help="Path to AMBER mdout log file")
 parser.add_argument("output", type=str, help="Output json file")
 parser.add_argument("-k", "--keep", action='store_false',
                     help="Keep original totals formatting")
+parser.add_argument("-a", "--accounting", type=str, default="accounting.json",
+                    help="Path to accounting data from hpcbench sacct or "
+                    "hpcbench syslog.")
 
 
-def parse_amber_log(logfile, standardise=True):
+def parse_amber_log(logfile, standardise=True, accounting="accounting.json"):
     """
     Parse the contents of an AMBER log file and extract the performance info.
 
     Args:
         logfile - path to the amber log file (normally mdout), a string
+        standardise - whether to standardise the outputs using crosswalk
+        accounting - if outputs are standardised, include slurm accounting or
+        power consumption values from this file (normally the path to a json
+        file created by hpcbench sacct) - a string
 
     Returns:
         a dictionary containing the performance info..
@@ -87,17 +94,17 @@ def parse_amber_log(logfile, standardise=True):
             output["Totals"]["Atoms"] = line.strip().split()[2]
         if 'nstlim' in output['Infile']:
             output['Totals']['Number of steps'] = output['Infile']['nstlim']
-            output['Totals']['Simulation time (ns)'] = str( 0.001 * int(
+            output['Totals']['Simulation time (ns)'] = str(0.001 * int(
                 output['Infile']['nstlim'])*float(output['Infile']['dt']))
             output['Totals']['Timestep (ns)'] = str(
                 float(output['Infile']['dt']) / 1000)
     if standardise:
-        output["Totals"] = standardise_totals(output["Totals"])
+        output["Totals"] = standardise_totals(output["Totals"], accounting)
     return output
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    log = parse_amber_log(args.log, args.keep)
+    log = parse_amber_log(args.log, args.keep, args.accounting)
     with open(args.output, "w") as outfile:
         json.dump(log, outfile, indent=4)

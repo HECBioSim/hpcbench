@@ -165,6 +165,8 @@ def does_match(path, matches):
     """
     with open(path, "r") as file:
         bench = json.load(file)
+    if not matches:
+        return bench
     for match in matches:
         path, equal = parse_match_arg(match)
         destination = path_in_dict(bench, path)

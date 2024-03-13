@@ -17,21 +17,24 @@ parser.add_argument("log", type=str, help="Path to OMM log file")
 parser.add_argument("output", type=str, help="Output json file")
 parser.add_argument("-k", "--keep", action='store_false',
                     help="Keep original totals formatting")
+parser.add_argument("-a", "--accounting", type=str, default="accounting.json",
+                    help="Path to accounting data from hpcbench sacct or "
+                    "hpcbench syslog.")
 
 
-def parse_omm_log(filename, standardise=True):
+def parse_omm_log(filename, standardise=True, accounting="accounting.json"):
     """
     """
     with open(filename, "r") as file:
         data = json.load(file)
     output = {"Totals": data}
     if standardise:
-        output["Totals"] = standardise_totals(output["Totals"])
+        output["Totals"] = standardise_totals(output["Totals"], accounting)
     return output
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    log = parse_omm_log(args.log, args.keep)
+    log = parse_omm_log(args.log, args.keep, args.accounting)
     with open(args.output, "w") as outfile:
         json.dump(log, outfile, indent=4)

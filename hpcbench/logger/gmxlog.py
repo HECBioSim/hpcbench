@@ -15,9 +15,12 @@ parser.add_argument("log", type=str, help="Path to GROMACS log file")
 parser.add_argument("output", type=str, help="Output json file")
 parser.add_argument("-k", "--keep", action='store_false',
                     help="Keep original totals formatting")
+parser.add_argument("-a", "--accounting", type=str, default="accounting.json",
+                    help="Path to accounting data from hpcbench sacct or "
+                    "hpcbench syslog.")
 
 
-def parse_gmx_log(log, standardise=True):
+def parse_gmx_log(log, standardise=True, accounting="accounting.json"):
     """Parse a gmx log file into a python dictionary.
     This function is a horrid mess, because gromacs log files are a horrid
     mess.
@@ -135,12 +138,12 @@ def parse_gmx_log(log, standardise=True):
     output["Totals"]["step/s"] = int(output["Totals"]["Number of steps"]) / \
         float(output["Totals"]["Wall time (s)"])
     if standardise:
-        output["Totals"] = standardise_totals(output["Totals"])
+        output["Totals"] = standardise_totals(output["Totals"], accounting)
     return output
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    log = parse_gmx_log(args.log, args.keep)
+    log = parse_gmx_log(args.log, args.keep, args.accounting)
     with open(args.output, "w") as outfile:
         json.dump(log, outfile, indent=4)

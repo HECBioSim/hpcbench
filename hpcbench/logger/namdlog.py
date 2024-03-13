@@ -15,6 +15,9 @@ parser.add_argument("log", type=str, help="Path to NAMD log file")
 parser.add_argument("output", type=str, help="Output json file")
 parser.add_argument("-k", "--keep", action='store_false',
                     help="Keep original totals formatting")
+parser.add_argument("-a", "--accounting", type=str, default="accounting.json",
+                    help="Path to accounting data from hpcbench sacct or "
+                    "hpcbench syslog.")
 
 
 def find_in_line(line, word, offset):
@@ -34,7 +37,7 @@ def find_in_line(line, word, offset):
             return line_fmt[c_word+offset]
 
 
-def parse_namd_log(filename, standardise=True):
+def parse_namd_log(filename, standardise=True, accounting="accounting.json"):
     """
     Parse the contents of a log file generate by NAMD. Return the
     performance information as a dictionary.
@@ -57,7 +60,7 @@ def parse_namd_log(filename, standardise=True):
             cpu_time = find_in_line(line, "CPUTime:", 1)
         if "Finished startup" in line:
             startup_time = find_in_line(line, "at", 1)
-        if "ATOMS" in line and len(line.split(" ") == 3):
+        if "ATOMS" in line and len(line.split(" ")) == 3:
             atoms = find_in_line(line, "ATOMS", -1)
         if "Running for" in line:
             steps = find_in_line(line, "steps", -1)
@@ -82,12 +85,12 @@ def parse_namd_log(filename, standardise=True):
         "Simulation time (ns)": simtime
         }}
     if standardise:
-        output["Totals"] = standardise_totals(output["Totals"])
+        output["Totals"] = standardise_totals(output["Totals"], accounting)
     return output
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    log = parse_namd_log(args.log, args.keep)
+    log = parse_namd_log(args.log, args.keep, args.accounting)
     with open(args.output, "w") as outfile:
         json.dump(log, outfile, indent=4)
