@@ -19,11 +19,11 @@ export OMP_NUM_THREADS=1
 ###RUN
 srun --cpu-freq=2250000 --unbuffered --cpu-bind=cores --distribution=block:block --hint=nomultithread /work/c01/c01/rwelch/software/lammps-2Aug2023/build/lmp -in benchmark.in
 
-kill $cpuid
+kill £cpuid
 
 ###POSTFIX
 hpcbench sacct £SLURM_JOB_ID accounting.json
 hpcbench lmplog log.lammps run.json
 hpcbench slurmlog £0 slurm.json
 hpcbench extra -e "'Comment:$comment'" -e "'Machine:$machine'" meta.json
-hpcbench collate -l sysinfo.json gpulog.json cpulog.json accounting.json run.json slurm.json meta.json -o $benchout
+hpcbench collate -l sysinfo.json cpulog.json accounting.json run.json slurm.json meta.json -o $benchout

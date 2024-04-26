@@ -229,6 +229,9 @@ def standardise_totals(totals, get_accounting="accounting.json", infile=None):
             print("No unit for "+str(key))
             raise e
 
+    for key, value in standard.items():
+        standard[key] = str(standard[key])
+
     return standard
 
 

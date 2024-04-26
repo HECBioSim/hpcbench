@@ -13,7 +13,7 @@ from collections import OrderedDict
 
 parser = argparse.ArgumentParser(
     description="Plot scaling (e.g. ns/hour, ns/watt) from hpcbench log files")
-parser.add_argument("-m", "--matching", type=str, nargs="+",
+parser.add_argument("-m", "--matching", type=str, action="append",
                     help="Conditions that a hpcbench output json file has to "
                     "match to be included. The format is: "
                     "--matching entry:nestedentry=condition. You can supply "
@@ -42,10 +42,12 @@ parser.add_argument("-p", "--outside", action="store_true",
                     help="Show legend outside plot area")
 parser.add_argument("-t", "--stack", action="store_true",
                     help="Make a stack plot")
+parser.add_argument("-i", "--dash", type=str,
+                    help="Labels matching this text will be dashed")
 
 
 def plot(data, xlabel, ylabel, outfile, xscale="linear", yscale="linear",
-         legend_outside=False, sort=True):
+         legend_outside=False, sort=True, dash=None):
     """
     Plot the results from get_data.
 
@@ -66,7 +68,10 @@ def plot(data, xlabel, ylabel, outfile, xscale="linear", yscale="linear",
         x, y = value['x'], value['y']
         if sort:
             x, y = sort_together([x, y])
-        ax.plot(x, y, label=key)
+        linestyle = "-"
+        if dash and (dash in key):
+            linestyle = "dashed"
+        ax.plot(x, y, label=key, linestyle=linestyle)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_xscale(xscale)
@@ -156,7 +161,7 @@ def stackplot(data, xlabel, ylabel, outfile, xscale="linear", yscale="linear",
 
 
 def main(directory, matches, x, y, label, outfile, xscale, yscale,
-         legend_outside=False, stack=False):
+         legend_outside=False, stack=False, dash=None):
     """
     Look through all the hpcbench json files in a directory, check that they
     match the criterion specified, and extract the data that will be used,
@@ -176,6 +181,7 @@ def main(directory, matches, x, y, label, outfile, xscale, yscale,
         xscale: scale of the y-axis. can be 'linear', 'log', etc
         legend_outside: whether to put the legend outside the main plot
         area. A boolean.
+        dash: lines with this string in the label will appear dashed,=
     Returns:
         A dictionary containing the results indexed by label, with each result
         having a set of x and y values.
@@ -183,7 +189,7 @@ def main(directory, matches, x, y, label, outfile, xscale, yscale,
     dicts = get_data(matches, x, y, label, directory, wildcard=True)
     if outfile and type(y) is str:
         plot(dicts, x.split(":")[-1], y.split(":")[-1], outfile, xscale,
-             yscale, legend_outside=legend_outside)
+             yscale, legend_outside=legend_outside, dash=dash)
     if outfile and type(y) is list:
         stackplot(dicts, x.split(":")[-1], y.split(":")[-1], outfile, xscale,
                   yscale, legend_outside=legend_outside, stack=stack)
@@ -227,4 +233,4 @@ if __name__ == "__main__":
         args.y = args.y[0]
     dicts = main(args.directory, args.matching, args.x, args.y,
                  args.label, args.outfile, args.xscale, args.yscale,
-                 args.outside)
+                 args.outside, dash=args.dash)

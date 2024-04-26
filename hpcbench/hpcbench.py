@@ -247,7 +247,17 @@ tools.append({"Names": ["stall"],
 tools.append({"Names": ["table"],
               "Tags": ["plot"],
               "Location": os.path.join(cwd, "plot", "table.py"),
-              "Help": "TODO"})
+              "Help": "Make a table from hpcbench data files"})
+
+tools.append({"Names": ["status"],
+              "Tags": ["util"],
+              "Location": os.path.join(cwd, "util", "status.py"),
+              "Help": "Check status of a completed benchmark run"})
+
+tools.append({"Names": ["best"],
+              "Tags": ["plot"],
+              "Location": os.path.join(cwd, "postprocess", "best.py"),
+              "Help": "Mark hpcbench output files according to a pattern"})
 
 
 def entry_point():

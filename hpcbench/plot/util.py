@@ -242,7 +242,7 @@ def get_data(matches, x, y, label, directory, wildcard=False, y2=None):
     data = {}
     for hdict in dicts:
         xval = bodge_numeric_func(path_func(hdict, parse_path_arg(x)))
-        if type(y) == list:
+        if type(y) is list:
             yval = {}
             for element in y:
                 yval[element] = bodge_numeric_func(

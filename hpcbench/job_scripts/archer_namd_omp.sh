@@ -26,9 +26,9 @@ hpcbench cpulog "'namd2'" cpulog.json & cpuid=£!
 srun --cpu-freq=2250000 --distribution=block:block --unbuffered --cpu-bind=cores namd2 +setcpuaffinity +ppn £PPN benchmark.in > benchmark.log
 
 ###POSTFIX
-kill $cpuid
+kill £cpuid
 hpcbench sacct £SLURM_JOB_ID accounting.json
-hpcbench namdlog md.log run.json
+hpcbench namdlog benchmark.log run.json
 hpcbench slurmlog £0 slurm.json
 hpcbench extra -e "'Comment:$comment'" -e "'Machine:$machine'" meta.json
 hpcbench collate -l sysinfo.json run.json accounting.json slurm.json meta.json -o $benchout

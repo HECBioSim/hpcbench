@@ -47,14 +47,9 @@ def parse_namd_log(filename, standardise=True, accounting="accounting.json"):
     Returns:
         the performance inforation, as a dictionary.
     """
-    nsperday = []
-    sperstep = []
     with open(filename, "r") as file:
         lines = file.readlines()
     for line in lines:
-        if "Benchmark time" in line:
-            sperstep.append(find_in_line(line, "s/step", -1))
-            nsperday.append(find_in_line(line, "ns/day", -1))
         if "WallClock:" in line:
             wallclock_time = find_in_line(line, "WallClock:", 1)
             cpu_time = find_in_line(line, "CPUTime:", 1)
@@ -67,10 +62,10 @@ def parse_namd_log(filename, standardise=True, accounting="accounting.json"):
         if "TIMESTEP" in line and "LDB" not in line:
             timestep = str(float(find_in_line(line, "TIMESTEP", 1))/1e6)
     simtime = str(float(timestep) * int(steps))
-    nsperday = sum(map(float, nsperday))/len(nsperday)
-    sperstep = sum(map(float, sperstep))/len(sperstep)
-    stepspers = 1/sperstep
     walltime_nosetup = float(wallclock_time) - float(startup_time)
+    nsperday = (float(simtime)/walltime_nosetup)*86400
+    sperstep = walltime_nosetup/float(steps)
+    stepspers = 1/sperstep
     output = {"Totals": {
         "ns/day": str(nsperday),
         "s/step": str(sperstep),

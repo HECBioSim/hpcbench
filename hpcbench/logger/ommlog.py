@@ -24,6 +24,19 @@ parser.add_argument("-a", "--accounting", type=str, default="accounting.json",
 
 def parse_omm_log(filename, standardise=True, accounting="accounting.json"):
     """
+    Parse an OMM log. Because OMM logs are output by OMM python scripts, which
+    are already formatted correctly (at least the ones output by hpcbench
+    templates), this is mostly just a wrapper which optionally passes the
+    script output through hpcbenchmark.logger.crosswalk.standardise_totals.
+
+    Args:
+        filaname: name of the OMM log file, a string.
+        standardise: if True, crosswalk will be used to standardise results
+        accounting: path to the accounting.json file from hpcbench sacct, a
+        string.
+
+    Returns:
+        output hpcbench log file as a dict
     """
     with open(filename, "r") as file:
         data = json.load(file)

@@ -14,7 +14,7 @@
 
 ###PREFIX
 export OMP_NUM_THREADS=1
-module load namd
+module load namd/2.14-nosmp
 export PATH="/work/c01/c01/rwelch/anaconda3/bin:£PATH"
 hpcbench infolog sysinfo.json
 hpcbench cpulog "'namd2'" cpulog.json & cpuid=£!
@@ -26,7 +26,7 @@ srun --distribution=block:block --hint=nomultithread --unbuffered --cpu-bind=cor
 ###POSTFIX
 kill £cpuid
 hpcbench sacct £SLURM_JOB_ID accounting.json
-hpcbench namdlog md.log run.json
+hpcbench namdlog benchmark.log run.json
 hpcbench slurmlog £0 slurm.json
 hpcbench extra -e "'Comment:$comment'" -e "'Machine:$machine'" meta.json
 hpcbench collate -l sysinfo.json run.json accounting.json slurm.json meta.json -o $benchout

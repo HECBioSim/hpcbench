@@ -20,6 +20,7 @@ A set of benchmarks for biomolecular simulation tools.
 * Supported HPC systems
     - [X] JADE
     - [X] ARCHER2
+    - [X] Grace Hopper Testbed
     - [ ] COSMA
     - [ ] TURSA
     - [ ] ISAMBARD
