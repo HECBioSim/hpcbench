@@ -25,4 +25,6 @@ hpcbench sacct £SLURM_JOB_ID accounting.json
 hpcbench namdlog namdlog.txt run.json
 hpcbench slurmlog £0 slurm.json
 hpcbench extra -e "'Comment:$comment'" -e "'Machine:$machine'" meta.json
-hpcbench collate -l sysinfo.json gpulog.json cpulog.json accounting.json run.json slurm.json meta.json -o $benchout
+hpcbench namdenergy benchmark.log thermo.json
+hpcbench collate -l sysinfo.json gpulog.json cpulog.json thermo.json accounting.json run.json slurm.json meta.json -o $benchout
+rm benchmark.coor* benchmark.dcd benchmark.pdb benchmark.psf benchmark.vel.*

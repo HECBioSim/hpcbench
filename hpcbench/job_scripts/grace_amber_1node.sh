@@ -25,4 +25,5 @@ kill £(< sys.pid)
 hpcbench amberlog -a power.json benchmark.mdout run.json
 hpcbench slurmlog £0 slurm.json
 hpcbench extra -e "'MD:AMBER22'" -e "'Machine:Grace Hopper Testbed'" -e "'comment:$comment'" meta.json
-hpcbench collate -l sysinfo.json gpulog.json cpulog.json power.json run.json slurm.json meta.json -o $benchout
+hpcbench amberenergy benchmark.mdout thermo.json
+hpcbench collate -l sysinfo.json gpulog.json cpulog.json thermo.json power.json run.json slurm.json meta.json -o $benchout

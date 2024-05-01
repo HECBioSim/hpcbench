@@ -25,4 +25,5 @@ kill £(< sys.pid)
 hpcbench lmplog -a power.json log.lammps run.json
 hpcbench slurmlog £0 slurm.json
 hpcbench extra -e "'MD:GROMACS2024'" -e "'Machine:Grace Hopper Testbed'" -e "'comment:$comment'" meta.json
-hpcbench collate -l sysinfo.json gpulog.json cpulog.json power.json run.json slurm.json meta.json -o $benchout
+hpcbench collate -l sysinfo.json gpulog.json cpulog.json power.json thermo.json run.json slurm.json meta.json -o $benchout
+rm restart.* benchmark.dcd

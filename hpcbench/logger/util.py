@@ -8,6 +8,23 @@ import signal
 from shutil import which
 
 
+def find_in_line(line, word, offset):
+    """
+    Given a line of text, locate the word next to a keyword.
+
+    Args:
+        line: one line of text, a string.
+        word: the keyword, a string
+        offset: how many words over the target word is. An integer.
+    Returns:
+        the target word, a string,
+    """
+    line_fmt = ' '.join(line.split()).strip().split(" ")
+    for c_word in range(len(line_fmt)):
+        if line_fmt[c_word] == word:
+            return line_fmt[c_word+offset]
+
+
 def parse_smi(smi, results):
     """
     Parse the output of nvidia-smi and reformat it into a dictionary.

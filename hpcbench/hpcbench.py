@@ -204,10 +204,25 @@ tools.append({"Names": ["namdlog"],
               "Location": os.path.join(cwd, "logger", "namdlog.py"),
               "Help": "Convert namd stdout output to a json file"})
 
+tools.append({"Names": ["gmxedr", "gromacsedr"],
+              "Tags": ["parser"],
+              "Location": os.path.join(cwd, "logger", "gmxenergy.py"),
+              "Help": "Convert a gmx edr file to a json file"})
+
+tools.append({"Names": ["ambenergy", "amberenergy"],
+              "Tags": ["parser"],
+              "Location": os.path.join(cwd, "logger", "amberenergy.py"),
+              "Help": "Extract thermo info from an amber log file"})
+
+tools.append({"Names": ["namdenergy", "namdthermo"],
+              "Tags": ["parser"],
+              "Location": os.path.join(cwd, "logger", "namdthermo.py"),
+              "Help": "Extract thermo info from an namd log file"})
+
 tools.append({"Names": ["lmplog", "lammpslog"],
               "Tags": ["parser"],
               "Location": os.path.join(cwd, "logger", "lmplog.py"),
-              "Help": "Convert a lammps log file to a json file"})
+              "Help": "Convert a lammps log to a json file"})
 
 tools.append({"Names": ["ommlog", "openmmlog"],
               "Tags": ["parser"],

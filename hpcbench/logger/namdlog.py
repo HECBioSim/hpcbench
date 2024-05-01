@@ -7,6 +7,7 @@ Parse NAMD stdout output and convert it to a json file.
 import argparse
 import json
 from hpcbench.logger.crosswalk import standardise_totals
+from hpcbenhc.logger.utils import find_in_line
 
 parser = argparse.ArgumentParser(
     description="Get performance and system info from a NAMD log"
@@ -18,23 +19,6 @@ parser.add_argument("-k", "--keep", action='store_false',
 parser.add_argument("-a", "--accounting", type=str, default="accounting.json",
                     help="Path to accounting data from hpcbench sacct or "
                     "hpcbench syslog.")
-
-
-def find_in_line(line, word, offset):
-    """
-    Given a line of text, locate the word next to a keyword.
-
-    Args:
-        line: one line of text, a string.
-        word: the keyword, a string
-        offset: how many words over the target word is. An integer.
-    Returns:
-        the target word, a string,
-    """
-    line_fmt = ' '.join(line.split()).strip().split(" ")
-    for c_word in range(len(line_fmt)):
-        if line_fmt[c_word] == word:
-            return line_fmt[c_word+offset]
 
 
 def parse_namd_log(filename, standardise=True, accounting="accounting.json"):
