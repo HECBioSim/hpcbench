@@ -7,7 +7,8 @@ Dump system info to a file.
 import argparse
 import json
 import subprocess
-from hpcbench.logger.util import GracefulKiller, exists, parse_smi
+from hpcbench.logger.util import (GracefulKiller, exists, parse_nvidia_smi,
+                                  parse_rocm_smi)
 
 parser = argparse.ArgumentParser(
     description="Log system info (e.g. environment modules, environment "
@@ -20,6 +21,8 @@ SMI_COLS = "name,pci.bus_id,driver_version,pstate,count,serial,uuid," \
     "inforom.power,gom.current,memory.total,index,clocks.sm,clocks.mem," \
     "clocks.gr"
 SMI_COMMAND = "nvidia-smi --query-gpu="+SMI_COLS+" --format=csv"
+
+ROCM_COMMAND = "rocm-smi -a --json"
 
 
 def get_sysinfo(smi_command=SMI_COMMAND):
@@ -56,10 +59,16 @@ def get_sysinfo(smi_command=SMI_COMMAND):
         nvout = subprocess.run(smi_command.split(
             " "), capture_output=True, text=True).stdout.strip()
         results = {}
-        results = parse_smi(nvout, results)
+        results = parse_nvidia_smi(nvout, results)
+        sysinfo["GPU"] = results
+    if exists("rocm-smi"):
+        rocmout = subprocess.run(smi_command.split(
+            " "), capture_output=True, text=True).stdout.strip()
+        results = {}
+        results = parse_rocm_smi(rocmout, results)
         sysinfo["GPU"] = results
     else:
-        print("nvidia-smi not found, skpipping...")
+        print("nvidia-smi\rocm-smi not found, skpipping...")
 
     if exists("printenv"):
         env = subprocess.run(['printenv'],  capture_output=True,

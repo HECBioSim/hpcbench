@@ -60,27 +60,27 @@ def update(source, target, sourceloc=None, targetloc=None, delete=False):
         :-delmited string. Will be created if it doesn't exist.
         delte: if true, original file will be deleted.
     """
-    with open(args.source, "r") as infile:
-        source = json.load(infile)
-    with open(args.target, "r") as infile:
-        target = json.load(infile)
+    with open(source, "r") as infile:
+        source_contents = json.load(infile)
+    with open(target, "r") as infile:
+        target_contents = json.load(infile)
 
     if sourceloc:
-        source = get_dict_element(source, sourceloc)
+        source_contents = get_dict_element(source_contents, sourceloc)
 
     if targetloc:
         new_element = {}  # temporary fix, this is not very robust
-        for key, value in source.items():
+        for key, value in source_contents.items():
             new_element[key] = value
-        target[targetloc.split(":")[-1]] = new_element
+        target_contents[targetloc.split(":")[-1]] = new_element
     else:
-        for key, value in source.items():
-            target[key] = value
+        for key, value in source_contents.items():
+            target_contents[key] = value
 
-    with open(args.target, "w") as outfile:
-        json.dump(target, outfile, indent=4)
+    with open(target, "w") as outfile:
+        json.dump(target_contents, outfile, indent=4)
     if delete:
-        os.remove(args.source)
+        os.remove(source)
 
 
 if __name__ == "__main__":

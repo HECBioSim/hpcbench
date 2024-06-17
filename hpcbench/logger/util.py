@@ -6,6 +6,7 @@ Utility functions for hpcbench data loggers
 
 import signal
 from shutil import which
+import json
 
 
 def find_in_line(line, word, offset):
@@ -25,7 +26,7 @@ def find_in_line(line, word, offset):
             return line_fmt[c_word+offset]
 
 
-def parse_smi(smi, results):
+def parse_nvidia_smi(smi, results):
     """
     Parse the output of nvidia-smi and reformat it into a dictionary.
 
@@ -50,6 +51,30 @@ def parse_smi(smi, results):
         row = list(map(str.strip, row.split(",")))
         for name, value in zip(cols, row):
             results[row[id_col]][name].append(value)
+    return results
+
+
+def parse_rocm_smi(smi, results):
+    """
+    Parse the output of rocm-smi and reformat it into a dictionary.
+
+    Args:
+        smi: the string output by rocm-smi in json mode
+        results: a dictionary with results from this function. If there is no
+        dictionary yet, pass an empty dictionary.
+
+    Returns:
+        results: a dictionary containing the results, indexed by GPU number.
+    """
+    parsed = json.loads(smi)
+    if results == {}:
+        for key, value in parsed.items():
+            results[key.replace("card", "")] = {}
+            for key2, value2 in value.items():
+                results[key.replace("card", "")][key2] = []
+    for key, value in parsed.items():
+        for key2, value2 in value.items():
+            results[key.replace("card", "")][key2].append(value2)
     return results
 
 
