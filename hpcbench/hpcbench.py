@@ -274,6 +274,12 @@ tools.append({"Names": ["best"],
               "Location": os.path.join(cwd, "postprocess", "best.py"),
               "Help": "Mark hpcbench output files according to a pattern"})
 
+tools.append({"Names": ["bars"],
+              "Tags": ["plot"],
+              "Location": os.path.join(cwd, "plot", "bars.py"),
+              "Help": "Plot a bar chart"})
+
+
 
 def entry_point():
     """

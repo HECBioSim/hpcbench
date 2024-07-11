@@ -53,12 +53,12 @@ def get_tabular(matches, rows, cols, directory):
     Args:
         matches: a list of strings, each one specifying some criteria that the
         json file has to match eg. ['foo:bar:baz=quux']
-        x: a list of strings of the same format specifying the location of the
-        rows, e.g. ['foo:bar:baz']. If multiple values are provided then the
-        row will be labelled with all of them.
-        x: a list of strings of the same format specifying the location of the
-        columns, e.g. ['foo:bar:baz']. There will be as many columns as there
-        are entries in this list.
+        rows: a list of strings of the same format specifying the location of
+        the rows, e.g. ['foo:bar:baz']. If multiple values are provided then
+        the row will be labelled with all of them.
+        cols: a list of strings of the same format specifying the location of
+        the columns, e.g. ['foo:bar:baz']. There will be as many columns as
+        there are entries in this list.
         directory: the directory to look for the hpcbench json files in.
 
     Returns:
