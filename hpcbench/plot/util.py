@@ -163,8 +163,11 @@ def does_match(path, matches):
     Returns:
         The benchmark parsed as a dict, if it matches, None if it doesn't.
     """
-    with open(path, "r") as file:
-        bench = json.load(file)
+    try:
+        with open(path, "r") as file:
+            bench = json.load(file)
+    except Exception as e:
+        raise IOError("Couldn't read "+str(path)+" ("+str(e)+")")
     if not matches:
         return bench
     for match in matches:

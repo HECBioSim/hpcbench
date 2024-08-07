@@ -52,6 +52,7 @@ def plot_bars(tabular, outfile, xlabel, label_index=1, value_index=0):
     Returns:
         nothing, but creates a file called outfile
     """
+    
     # NOTE: this is a special tabular, column 1 is the value and column 2 is
     # the label name
     indices = np.arange(len(tabular.keys()))
@@ -61,9 +62,12 @@ def plot_bars(tabular, outfile, xlabel, label_index=1, value_index=0):
                '#a65628', '#984ea3', '#999999', '#e41a1c', '#dede00']
     colours_lookup = {}
     bars_lookup = {}
+    groups_lookup = {}
     labels = []
+    xs = []
     for key, value in tabular.items():
-        labels.append(list(value.keys())[label_index])
+        labels.append(key.split(", ")[1])
+        xs.append(key.split(", ")[0])
     bars_per_index = len(set(labels))
 
     fig, ax = plt.subplots()
@@ -80,25 +84,32 @@ def plot_bars(tabular, outfile, xlabel, label_index=1, value_index=0):
     for label in list(set(labels)):
         bars_lookup[label] = i
         i += 1
+        
+    # set indexes for groups
+    i = 1
+    for group in xs:
+        if group not in groups_lookup:
+            groups_lookup[group] = i
+        i += 1
 
     # create bars
     curr_group = 1
     for row, cols in tabular.items():
-        label = list(cols.keys())[label_index]
-        value = list(cols.values())[value_index]
+        label = row.split(", ")[1]
+        x = row.split(", ")[0]
+        curr_group = groups_lookup[x]
         curr_bar = bars_lookup[label]
         colour = colours_lookup[label]
-        plot_label = cols[label]
+        plot_label = label
         if label in used_labels:
             plot_label = "_nolegend_"
         ax.bar(curr_group+(bar_width*start_offset) + (bar_width*curr_bar),
-               bodge_numeric(value), bar_width*0.8, bottom=0, label=plot_label,
+               bodge_numeric(list(cols.values())[value_index]), bar_width*0.8, bottom=0, label=plot_label,
                capsize=5, color=colour)
         used_labels.append(label)
-        curr_group += 1
 
     # other stuff
-    ax.set(xticks=indices+1.9, xticklabels=tabular.keys())
+    ax.set(xticks=np.arange(len(set(xs)))+1, xticklabels=groups_lookup.keys())
     ax.legend()
     ax.autoscale_view()
     # ax.set_ylim(bottom = bot, top=top)
@@ -112,7 +123,7 @@ def plot_bars(tabular, outfile, xlabel, label_index=1, value_index=0):
 
 
 def main(x, y, label, filter_list, directory, outfile):
-    tabular = get_tabular(filter_list, [y, label], [x], directory)
+    tabular = get_tabular(filter_list, [y], [x, label], directory)
     plot_bars(tabular, outfile, x, label_index=1, value_index=0)
 
 
@@ -123,7 +134,7 @@ def test():
     filter_list = ["meta:QM=Psi4"]
     directory = "/home/rob/benchout/archer/psi4"
     outfile = "test.pdf"
-    tabular = get_tabular(filter_list, [y, label], [x], directory)
+    tabular = get_tabular(filter_list, [y], [x, label], directory)
     plot_bars(tabular, outfile, x, label_index=1, value_index=0)
 
 

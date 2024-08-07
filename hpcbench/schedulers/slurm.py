@@ -122,14 +122,13 @@ def get_job_status(script_id=None, script_path=None):
         for job in queue:
             if job["JOBID"] == script_id:
                 return job["STATUS"]
-        acct = subprocess.run(['sacct', '--jobs='+str(script_id)],
+        acct = subprocess.run(['sacct', '--jobs='+str(script_id), '-p'],
                               capture_output=True, text=True)
         acct = acct.stdout.split("\n")
-        header = acct.pop(0).strip().split()
-        acct.pop(0)
+        header = acct.pop(0).strip().split("|")
         accts = []
         for line in acct:
-            curr_line = line.strip().split()
+            curr_line = line.strip().split("|")
             accts.append(
                 {header[i]: curr_line[i] for i in range(len(curr_line))})
         for acct in accts:
