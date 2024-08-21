@@ -128,6 +128,23 @@ def sort_dictionary(d):
 
 def stackplot(data, xlabel, ylabel, outfile, xscale="linear", yscale="linear",
               legend_outside=False, sort=True):
+    """
+    Create a 'stackplot' which breaks down the scaling of the program by which
+    functions/routines are being invoked.
+    Args:
+        data - output of hpcbench.plot.utilget_data, a dictionary.
+        xlabel - x label for plot, a string
+        ylabel - y label for plot, a string
+        outfile - output filename, a string.
+        xscale - scale to use for the x axis, a string. Passed to
+        matplotlib ax.set_xscale. (Usually 'linear' or 'logarithmic')
+        yscale - scale to use for the y axis, a string. Passed to
+        matplotlib ax.set_yscale. (Usually 'linear' or 'logarithmic')
+        legend_outside - whether to overlay the legend or put it outside the
+        plot area. A boolean.
+        sort - whether to sort the stack with the most expensive functions at
+        the top, a boolean.
+    """
     for key, value in data.items():
         for key1, value1 in value.items():
             if len(value1) == 1:

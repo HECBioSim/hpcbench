@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jul  9 15:27:08 2024
-
-@author: rob
+HPCbench bar chat plotter
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -84,7 +82,7 @@ def plot_bars(tabular, outfile, xlabel, label_index=1, value_index=0):
     for label in list(set(labels)):
         bars_lookup[label] = i
         i += 1
-        
+
     # set indexes for groups
     i = 1
     for group in xs:

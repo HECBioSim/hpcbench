@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Mar 19 09:57:50 2024
-
-@author: rob
+hpcbench table generator
 """
 
 import argparse

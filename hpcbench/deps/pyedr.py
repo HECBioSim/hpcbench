@@ -45,7 +45,6 @@ from hpcbench.deps import xdrlib
 import collections
 import warnings
 from pathlib import Path
-from tqdm import tqdm
 from typing import List, Tuple, Dict
 
 import numpy as np
@@ -522,7 +521,7 @@ def read_edr(path: str, verbose: bool = False) -> read_edr_return_type:
     all_energies = []
     all_names = [u'Time'] + [nm.name for nm in edr_file.nms]
     times = []
-    for ifr, frame in tqdm(enumerate(edr_file), disable=(not verbose)):
+    for ifr, frame in enumerate(edr_file):
         if frame.ener:
             # Export only frames that contain energies
             times.append(frame.t)
