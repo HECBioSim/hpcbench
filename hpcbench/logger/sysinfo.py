@@ -25,7 +25,7 @@ SMI_COMMAND = "nvidia-smi --query-gpu="+SMI_COLS+" --format=csv"
 ROCM_COMMAND = "rocm-smi -a --json"
 
 
-def get_sysinfo(smi_command=SMI_COMMAND):
+def get_sysinfo():
     """
     Collect and parse info from various command-line utilities.
 
@@ -56,13 +56,13 @@ def get_sysinfo(smi_command=SMI_COMMAND):
         sysinfo["modules"] = modules
 
     if exists("nvidia-smi"):
-        nvout = subprocess.run(smi_command.split(
+        nvout = subprocess.run(SMI_COMMAND.split(
             " "), capture_output=True, text=True).stdout.strip()
         results = {}
         results = parse_nvidia_smi(nvout, results)
         sysinfo["GPU"] = results
     if exists("rocm-smi"):
-        rocmout = subprocess.run(smi_command.split(
+        rocmout = subprocess.run(ROCM_COMMAND.split(
             " "), capture_output=True, text=True).stdout.strip()
         results = {}
         results = parse_rocm_smi(rocmout, results)

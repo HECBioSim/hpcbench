@@ -18,7 +18,7 @@ SMI_COLS = "timestamp,pstate,clocks_throttle_reasons.hw_slowdown," \
     "clocks.gr"
 SMI_COMMAND = "nvidia-smi --query-gpu="+SMI_COLS+" --format=csv"
 
-ROCM_COMMAND = "rocm-smi -f -P -t -u --showmemuse -b -c -g -o  --json"
+ROCM_COMMAND = "rocm-smi -f -P -t -u --showmemuse -b -c -g -o --json"
 
 parser = argparse.ArgumentParser("Log the output of nvidia-smi to a json file")
 parser.add_argument("output", type=str, help="Output json file")
@@ -51,7 +51,7 @@ def log_smi(killer, for_time, smi_command=SMI_COMMAND, interval=5, write=None,
     elapsed_time = 0
     output = {}
     while elapsed_time < for_time and not killer.kill_now:
-        p = subprocess.run(SMI_COMMAND.split(
+        p = subprocess.run(smi_command.split(
             " "), capture_output=True, text=True).stdout.strip()
         output = parser(p, output)
         time.sleep(interval)

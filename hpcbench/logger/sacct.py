@@ -8,6 +8,7 @@ import json
 import subprocess
 
 default_format_string="ConsumedEnergyRaw,CPUTimeRAW,NodeList,ElapsedRaw,JobID"
+"AveRss"
 
 parser = argparse.ArgumentParser(description="Get output from sacct for a"
                                  " given job and save it to a json file.")

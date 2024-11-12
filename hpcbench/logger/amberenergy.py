@@ -6,6 +6,7 @@ Get the energies from the log in an amber mdout file as a dictionary
 
 import json
 import argparse
+import copy
 
 parser = argparse.ArgumentParser("Dump get energy info from AMBER log file.")
 parser.add_argument("log", type=str, help="AMBER log file")
@@ -21,6 +22,7 @@ def parse_amber_energies_log(mdout):
     Returns:
         results - a dictionary of results
     """
+    results = {}
     with open(mdout, "r") as infile:
         for line in infile:
             if (line.count("=") == 3) or ("Density" in line and "=" in line):
@@ -33,7 +35,7 @@ def parse_amber_energies_log(mdout):
                             results[key].append(value)
                         except KeyError:
                             results[key] = [value]
-    for key, value in results.items():
+    for key, value in copy.copy(results).items():
         if len(value) == 1:
             del results[key]
     return results
@@ -41,6 +43,6 @@ def parse_amber_energies_log(mdout):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    results = parse_amber_energies_log(args.edr)
+    results = parse_amber_energies_log(args.log)
     with open(args.json, "w") as outfile:
         json.dump(results, outfile, indent=4)

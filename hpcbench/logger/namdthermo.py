@@ -38,6 +38,6 @@ def parse_namd_energies_log(mdout):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    results = parse_namd_energies_log(args.edr)
+    results = parse_namd_energies_log(args.log)
     with open(args.json, "w") as outfile:
         json.dump(results, outfile, indent=4)

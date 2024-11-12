@@ -7,7 +7,7 @@ Parse NAMD stdout output and convert it to a json file.
 import argparse
 import json
 from hpcbench.logger.crosswalk import standardise_totals
-from hpcbenhc.logger.utils import find_in_line
+from hpcbench.logger.util import find_in_line
 
 parser = argparse.ArgumentParser(
     description="Get performance and system info from a NAMD log"

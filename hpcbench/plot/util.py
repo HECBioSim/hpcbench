@@ -205,12 +205,19 @@ def path_with_wildcard(d, path):
             d[element]
             return path_with_wildcard(d[element], path)
         else:
-            retval = {}
-            for key, value in d.items():
-                # keep the path for the next iteration
-                oldpath = copy.copy(path)
-                retval[key] = path_with_wildcard(value, path)
-                path = copy.copy(oldpath)
+            if type(d) == dict:
+                retval = {}
+                for key, value in d.items():
+                    # keep the path for the next iteration
+                    oldpath = copy.copy(path)
+                    retval[key] = path_with_wildcard(value, path)
+                    path = copy.copy(oldpath)
+            if type(d) == list:
+                retval = []
+                for item in d: 
+                    oldpath = copy.copy(path)
+                    retval.append(path_with_wildcard(item, path))
+                    path = copy.copy(oldpath)
             return retval
     except KeyError:
         return False
@@ -248,6 +255,8 @@ def get_data(matches, x, y, label, directory, wildcard=False, y2=None):
     data = {}
     for hdict in dicts:
         xval = bodge_numeric_func(path_func(hdict, parse_path_arg(x)))
+        if not xval:
+            continue
         if type(y) is list:
             yval = {}
             for element in y:

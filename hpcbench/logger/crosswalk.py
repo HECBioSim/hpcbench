@@ -30,8 +30,6 @@ parser.add_argument("-t", "--totals", type=str, default="run",
 
 
 # these are useful, i might put them in a util.py
-
-
 def dget(dct, keys):
     for key in keys:
         dct = dct[key]

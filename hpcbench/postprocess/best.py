@@ -33,6 +33,8 @@ parser.add_argument("-t", "--mark", type=str,
                     "the syntax obj1:obj2:etc. Sets the value to True.")
 parser.add_argument("-d", "--directory", type=str,
                     help="Directory to look in.")
+parser.add_argument("-f", "--format", type=str, default="simple_grid",
+                    help="Output table format")
 
 
 def add_dict_element(d, element, set_to=None):
@@ -196,4 +198,4 @@ if __name__ == "__main__":
         args.best, args.variables, args.directory, args.mark, args.match)
     if not args.mark:
         print(tabulate.tabulate(best,
-                                tablefmt="simple_grid", headers="firstrow", ))
+                                tablefmt=args.format, headers="firstrow", ))

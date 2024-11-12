@@ -63,6 +63,8 @@ def plot_bars(tabular, outfile, xlabel, label_index=1, value_index=0):
     groups_lookup = {}
     labels = []
     xs = []
+    print()
+    print(tabular)
     for key, value in tabular.items():
         labels.append(key.split(", ")[1])
         xs.append(key.split(", ")[0])

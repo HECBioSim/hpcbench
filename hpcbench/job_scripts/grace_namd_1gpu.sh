@@ -25,7 +25,7 @@ kill £(< cpu.pid)
 kill £(< sys.pid)
 hpcbench namdlog -a power.json namdlog.txt run.json
 hpcbench slurmlog £0 slurm.json
-hpcbench extra -e "'MD:GROMACS2024'" -e "'Machine:Grace Hopper Testbed'" -e "'comment:$comment'" meta.json
+hpcbench extra -e "'MD:NAMD'" -e "'Machine:Grace Hopper Testbed'" -e "'comment:$comment'" meta.json
 hpcbench namdenergy benchmark.log thermo.json
 hpcbench collate -l sysinfo.json gpulog.json cpulog.json thermo.json power.json run.json slurm.json meta.json -o $benchout
 rm benchmark.coor* benchmark.dcd benchmark.pdb benchmark.psf benchmark.vel.*
