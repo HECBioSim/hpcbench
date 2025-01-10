@@ -279,7 +279,10 @@ tools.append({"Names": ["bars"],
               "Location": os.path.join(cwd, "plot", "bars.py"),
               "Help": "Plot a bar chart"})
 
-
+tools.append({"Names": ["addsacct"],
+              "Tags": ["util"],
+              "Location": os.path.join(cwd, "util", "add_sacct.py"),
+              "Help": "Add slurm accounting info to a hpcench output file"})
 
 def entry_point():
     """

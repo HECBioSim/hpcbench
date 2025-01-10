@@ -26,7 +26,7 @@ def parse_submission_script(script):
                     output["slurm"][param[0]] = param[1]
                 else:
                     output["slurm"][param[0]] = True
-            if "module" in line:
+            if "module load" in line:
                 output["modules"].append(line.split(" ")[2])
             if "gmx" in line:
                 output["program"] = "GROMACS"

@@ -6,6 +6,7 @@ Plot scaling
 
 import argparse
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 from more_itertools import sort_together
 from hpcbench.plot.util import get_data, path_with_wildcard
 import numpy as np
@@ -44,10 +45,16 @@ parser.add_argument("-t", "--stack", action="store_true",
                     help="Make a stack plot")
 parser.add_argument("-i", "--dash", type=str,
                     help="Labels matching this text will be dashed")
-
+parser.add_argument("--xaxislabel", type=str, help="x axis label")
+parser.add_argument("--yaxislabel", type=str, help="y axis label")
+parser.add_argument("--noysci", action="store_true",
+                    help="Disable scientific notation on the y axis")
+parser.add_argument("--noxsci", action="store_true",
+                    help="Disable scientific notation on the x axis")
 
 def plot(data, xlabel, ylabel, outfile, xscale="linear", yscale="linear",
-         legend_outside=False, sort=True, dash=None):
+         legend_outside=False, sort=True, dash=None, x_axis_label=None,
+         y_axis_label=None, noxsci=False, noysci=False):
     """
     Plot the results from get_data.
 
@@ -72,10 +79,20 @@ def plot(data, xlabel, ylabel, outfile, xscale="linear", yscale="linear",
         if dash and (dash in key):
             linestyle = "dashed"
         ax.plot(x, y, label=key, linestyle=linestyle)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
+    if x_axis_label:
+        ax.set_xlabel(x_axis_label)
+    else:
+        ax.set_xlabel(xlabel)
+    if y_axis_label:
+        ax.set_ylabel(y_axis_label)
+    else:
+        ax.set_ylabel(ylabel)
     ax.set_xscale(xscale)
     ax.set_yscale(yscale)
+    if noysci:
+        ax.yaxis.set_major_formatter(ticker.ScalarFormatter())
+    if noxsci:
+        ax.xaxis.set_major_formatter(ticker.ScalarFormatter())
     if legend_outside:
         ax.legend(bbox_to_anchor=(1.04, 0.5), loc="center left", frameon=False)
     else:
@@ -178,7 +195,8 @@ def stackplot(data, xlabel, ylabel, outfile, xscale="linear", yscale="linear",
 
 
 def main(directory, matches, x, y, label, outfile, xscale, yscale,
-         legend_outside=False, stack=False, dash=None):
+         legend_outside=False, stack=False, dash=None, xaxlabel=None,
+         yaxlabel=None, noxsci=False, noysci=False):
     """
     Look through all the hpcbench json files in a directory, check that they
     match the criterion specified, and extract the data that will be used,
@@ -206,7 +224,9 @@ def main(directory, matches, x, y, label, outfile, xscale, yscale,
     dicts = get_data(matches, x, y, label, directory, wildcard=True)
     if outfile and type(y) is str:
         plot(dicts, x.split(":")[-1], y.split(":")[-1], outfile, xscale,
-             yscale, legend_outside=legend_outside, dash=dash)
+             yscale, legend_outside=legend_outside, dash=dash,
+             x_axis_label=xaxlabel, y_axis_label=yaxlabel, noxsci=noxsci,
+             noysci=noysci)
     if outfile and type(y) is list:
         stackplot(dicts, x.split(":")[-1], y.split(":")[-1], outfile, xscale,
                   yscale, legend_outside=legend_outside, stack=stack)
@@ -250,4 +270,6 @@ if __name__ == "__main__":
         args.y = args.y[0]
     dicts = main(args.directory, args.matching, args.x, args.y,
                  args.label, args.outfile, args.xscale, args.yscale,
-                 args.outside, dash=args.dash)
+                 args.outside, dash=args.dash, xaxlabel=args.xaxislabel,
+                 yaxlabel=args.yaxislabel, noxsci=args.noxsci,
+                 noysci=args.noysci)

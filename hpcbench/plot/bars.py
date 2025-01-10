@@ -28,11 +28,18 @@ parser.add_argument("-l", "--legend", type=str,
                     "Legend will appear in each group.")
 parser.add_argument("-d", "--directory", type=str,
                     help="Directory to search for hpcbench output files.")
+parser.add_argument("-a", "--annotation", type=str, action="append",
+                    default=[], help="Add text to bars in the chart. Format is"
+                    " group:label=annotation. Call multiple times for multiple"
+                    " annotations.")
+parser.add_argument("--xaxislabel", type=str, help="x axis label")
+parser.add_argument("--yaxislabel", type=str, help="y axis label")
 parser.add_argument("-o", "--output", type=str,
                     help="Output file.")
 
 
-def plot_bars(tabular, outfile, xlabel, label_index=1, value_index=0):
+def plot_bars(tabular, outfile, xlabel, label_index=1, value_index=0,
+              annotate_bars=[], x_ax_label=None, y_ax_label=None):
     """
     Plot a grouped bar chart.
 
@@ -50,10 +57,15 @@ def plot_bars(tabular, outfile, xlabel, label_index=1, value_index=0):
     Returns:
         nothing, but creates a file called outfile
     """
+    # parse annotations (if they exist)
+    annotate_dict = {}
+    for item in annotate_bars:
+        key = item.split("=")[0]
+        value = item.split("=")[1]
+        annotate_dict[key] = value
     
     # NOTE: this is a special tabular, column 1 is the value and column 2 is
     # the label name
-    indices = np.arange(len(tabular.keys()))
 
     # set up dimensions
     colours = ['#377eb8', '#ff7f00', '#4daf4a', '#f781bf',
@@ -63,8 +75,6 @@ def plot_bars(tabular, outfile, xlabel, label_index=1, value_index=0):
     groups_lookup = {}
     labels = []
     xs = []
-    print()
-    print(tabular)
     for key, value in tabular.items():
         labels.append(key.split(", ")[1])
         xs.append(key.split(", ")[0])
@@ -103,8 +113,13 @@ def plot_bars(tabular, outfile, xlabel, label_index=1, value_index=0):
         plot_label = label
         if label in used_labels:
             plot_label = "_nolegend_"
-        ax.bar(curr_group+(bar_width*start_offset) + (bar_width*curr_bar),
-               bodge_numeric(list(cols.values())[value_index]), bar_width*0.8, bottom=0, label=plot_label,
+        bar_height = bodge_numeric(list(cols.values())[value_index])
+        bar_x = curr_group+(bar_width*start_offset) + (bar_width*curr_bar)
+        if x+":"+label in annotate_dict.keys():
+            annotation = annotate_dict[x+":"+label]
+            ax.text(bar_x, bar_height + bar_height*0.1, annotation,
+                    rotation=90, horizontalalignment="center")        
+        ax.bar(bar_x, bar_height, bar_width*0.8, bottom=0, label=plot_label,
                capsize=5, color=colour)
         used_labels.append(label)
 
@@ -112,19 +127,25 @@ def plot_bars(tabular, outfile, xlabel, label_index=1, value_index=0):
     ax.set(xticks=np.arange(len(set(xs)))+1, xticklabels=groups_lookup.keys())
     ax.legend()
     ax.autoscale_view()
-    # ax.set_ylim(bottom = bot, top=top)
     # https://matplotlib.org/stable/gallery/units/bar_unit_demo.html#sphx-glr-gallery-units-bar-unit-demo-py
-    plt.xlabel(xlabel)
-    plt.ylabel(list(list(tabular.values())[0].keys())[value_index])
+    if x_ax_label:
+        plt.xlabel(x_ax_label)
+    else:
+        plt.xlabel(xlabel)
+    if y_ax_label:
+        plt.ylabel(y_ax_label)
+    else:
+        plt.ylabel(list(list(tabular.values())[0].keys())[value_index])
     plt.tight_layout()
     plt.legend()
     plt.savefig(outfile)
     return
 
 
-def main(x, y, label, filter_list, directory, outfile):
+def main(x, y, label, filter_list, directory, outfile, annotation, xal, yal):
     tabular = get_tabular(filter_list, [y], [x, label], directory)
-    plot_bars(tabular, outfile, x, label_index=1, value_index=0)
+    plot_bars(tabular, outfile, x, label_index=1, value_index=0,
+              annotate_bars=annotation, x_ax_label=xal, y_ax_label=yal)
 
 
 def test():
@@ -141,4 +162,4 @@ def test():
 if __name__ == "__main__":
     args = parser.parse_args()
     main(args.xlabel, args.yvalue, args.legend, args.matching, args.directory,
-         args.output)
+         args.output, args.annotation, args.xaxislabel, args.yaxislabel)

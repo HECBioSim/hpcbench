@@ -86,6 +86,7 @@ def get_tabular(matches, rows, cols, directory):
                 name += path_func(curr_dict, element.split(":"))+", "
             except TypeError as e:
                 print("element "+str(element)+" not in "+str(curr_dict))
+                print("Typeerror while parsing for "+str(element))
         name = name[:-2]
         data[name] = dict_contents
     return data
