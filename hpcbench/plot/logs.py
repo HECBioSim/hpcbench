@@ -7,6 +7,7 @@ Plot log files created with hpcbench.
 import argparse
 import matplotlib.pyplot as plt
 from hpcbench.plot.util import get_data
+import hpcbench.plot.plot_style as style
 import numpy as np
 
 parser = argparse.ArgumentParser(
@@ -44,7 +45,9 @@ parser.add_argument("-b", "--avgy2", action="store_true",
                     help="Average y2 values")
 parser.add_argument("-t", "--time", action="store_true",
                     help="Simulation time on x axis")
-
+parser.add_argument("--xaxislabel", type=str, help="x axis label")
+parser.add_argument("--yaxislabel", type=str, help="y axis label")
+parser.add_argument("--small", action="store_true", help="Small plot")
 
 def rescale_time(x):
     """
@@ -103,7 +106,8 @@ def avg_dict(d):
 
 
 def plot(dicts, x, y, y2, label, outfile, x_time=True, legend_outside=False,
-         avg_y=False, avg_y2=False, xtime=False):
+         avg_y=False, avg_y2=False, xtime=True, xaxislabel=None,
+         yaxislabel=None, small=False):
     """
     Plot the contents of dicts, which is a dictionary, indexed by label,
     containing the contents of log files, with each log having an x, y and
@@ -134,7 +138,7 @@ def plot(dicts, x, y, y2, label, outfile, x_time=True, legend_outside=False,
     xlabel = x.split(":")[-1]
     ylabel = y.split(":")[-1]
     label = label.split(":")[-1]
-    print(dicts.keys())
+    col = style.ColourGetter()
     try:
         for key, value in dicts.items():
             print(value.keys())
@@ -144,7 +148,8 @@ def plot(dicts, x, y, y2, label, outfile, x_time=True, legend_outside=False,
             if avg_y:
                 value['y'][0] = avg_dict(value['y'][0])
             for keyn, valuen in value['y'][0].items():
-                ax.plot(times[0], valuen, label=str(key)+"("+keyn+")")
+                label = str(key)+"("+keyn+")"
+                ax.plot(times[0], valuen, label=label, color=col.get(label))
             if "y2" in value:
                 if avg_y2:
                     value['y2'][0] = avg_dict(value['y2'][0])
@@ -155,24 +160,33 @@ def plot(dicts, x, y, y2, label, outfile, x_time=True, legend_outside=False,
     except AttributeError:
         for key, value in dicts.items():
             if xtime:
-                x = np.linspace(0, value['y2'][0], len(value['y'][0]))
-                #x = np.linspace(0, 1, len(value['y'][0])) # normalise length
+                #x = np.linspace(0, value['y2'][0], len(value['y'][0]))
+                x = np.linspace(0, 1, len(value['y'][0])) # normalise length
                 value['x'][0] = x
             plt.plot(value['x'][0], value['y'][0], label=key)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
+    if xaxislabel:
+        ax.set_xlabel(xaxislabel)
+    else:
+        ax.set_xlabel(xlabel)
+    if yaxislabel:
+        ax.set_ylabel(yaxislabel)
+    else:
+        ax.set_ylabel(ylabel)
     if y2:
         ax2.set_ylabel(y2label)
     if legend_outside:
         ax.legend(bbox_to_anchor=(1.04, 0.5), loc="center left", frameon=False)
     else:
         ax.legend()
-    plt.tight_layout
-    plt.savefig(outfile, bbox_inches="tight")
+    plt.tight_layout()
+    if small:
+        fig.set_size_inches([4.0, 3.0])
+    plt.savefig(outfile, bbox_inches="tight", pad_inches=0)
 
 
 def main(directory, matches, x, y, label, outfile, y2=None, outside=False,
-         avg_y=False, avg_y2=False, xtime=False):
+         avg_y=False, avg_y2=False, xtime=False, xaxislabel=False,
+         yaxislabel=False, small=False):
     """
     Extract logged values (e.g. temperature, gpu and cpu load) from hpcbench
     log files and plot the results.
@@ -208,7 +222,8 @@ def main(directory, matches, x, y, label, outfile, y2=None, outside=False,
         y2 = None
     if outfile:
         plot(dicts, x, y, y2, label, outfile, legend_outside=outside,
-             avg_y=avg_y, avg_y2=avg_y2, xtime=True)
+             avg_y=avg_y, avg_y2=avg_y2, xtime=True, xaxislabel=xaxislabel,
+             yaxislabel=yaxislabel, small=small)
     return dicts
 
 
@@ -250,4 +265,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     dicts = main(args.directory, args.matching, args.x,
                  args.y, args.label, args.outfile, args.y2, args.outside,
-                 args.avgy, args.avgy2, args.time)
+                 args.avgy, args.avgy2, args.time, args.xaxislabel,
+                 args.yaxislabel, args.small)

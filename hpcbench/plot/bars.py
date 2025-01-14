@@ -6,6 +6,7 @@ HPCbench bar chat plotter
 import matplotlib.pyplot as plt
 import numpy as np
 from hpcbench.plot.table import get_tabular
+import hpcbench.plot.plot_style as style
 import argparse
 from util import bodge_numeric
 
@@ -34,12 +35,14 @@ parser.add_argument("-a", "--annotation", type=str, action="append",
                     " annotations.")
 parser.add_argument("--xaxislabel", type=str, help="x axis label")
 parser.add_argument("--yaxislabel", type=str, help="y axis label")
+parser.add_argument("--yscalefactor", type=float, default=1,
+                    help="y axis scale factor")
 parser.add_argument("-o", "--output", type=str,
                     help="Output file.")
 
 
 def plot_bars(tabular, outfile, xlabel, label_index=1, value_index=0,
-              annotate_bars=[], x_ax_label=None, y_ax_label=None):
+              annotate_bars=[], x_ax_label=None, y_ax_label=None, yscale=1.):
     """
     Plot a grouped bar chart.
 
@@ -68,9 +71,10 @@ def plot_bars(tabular, outfile, xlabel, label_index=1, value_index=0,
     # the label name
 
     # set up dimensions
-    colours = ['#377eb8', '#ff7f00', '#4daf4a', '#f781bf',
-               '#a65628', '#984ea3', '#999999', '#e41a1c', '#dede00']
-    colours_lookup = {}
+    col = style.ColourGetter()
+    #colours = ['#377eb8', '#ff7f00', '#4daf4a', '#f781bf',
+    #           '#a65628', '#984ea3', '#999999', '#e41a1c', '#dede00']
+    #colours_lookup = {}
     bars_lookup = {}
     groups_lookup = {}
     labels = []
@@ -86,8 +90,8 @@ def plot_bars(tabular, outfile, xlabel, label_index=1, value_index=0,
     used_labels = []
 
     # set colours (for shared labels and such)
-    for label in list(set(labels)):
-        colours_lookup[label] = colours.pop(0)
+    #for label in list(set(labels)):
+    #    colours_lookup[label] = colours.pop(0)
 
     # set indexes for bars
     i = 0
@@ -109,18 +113,18 @@ def plot_bars(tabular, outfile, xlabel, label_index=1, value_index=0,
         x = row.split(", ")[0]
         curr_group = groups_lookup[x]
         curr_bar = bars_lookup[label]
-        colour = colours_lookup[label]
+        #colour = colours_lookup[label]
         plot_label = label
         if label in used_labels:
             plot_label = "_nolegend_"
-        bar_height = bodge_numeric(list(cols.values())[value_index])
+        bar_height = bodge_numeric(list(cols.values())[value_index])*yscale
         bar_x = curr_group+(bar_width*start_offset) + (bar_width*curr_bar)
         if x+":"+label in annotate_dict.keys():
             annotation = annotate_dict[x+":"+label]
             ax.text(bar_x, bar_height + bar_height*0.1, annotation,
                     rotation=90, horizontalalignment="center")        
         ax.bar(bar_x, bar_height, bar_width*0.8, bottom=0, label=plot_label,
-               capsize=5, color=colour)
+               capsize=5, color=col.get(label))
         used_labels.append(label)
 
     # other stuff
@@ -138,14 +142,16 @@ def plot_bars(tabular, outfile, xlabel, label_index=1, value_index=0,
         plt.ylabel(list(list(tabular.values())[0].keys())[value_index])
     plt.tight_layout()
     plt.legend()
-    plt.savefig(outfile)
+    plt.savefig(outfile, bbox_inches="tight", pad_inches=0)
     return
 
 
-def main(x, y, label, filter_list, directory, outfile, annotation, xal, yal):
+def main(x, y, label, filter_list, directory, outfile, annotation, xal, yal,
+         yscale=1.):
     tabular = get_tabular(filter_list, [y], [x, label], directory)
     plot_bars(tabular, outfile, x, label_index=1, value_index=0,
-              annotate_bars=annotation, x_ax_label=xal, y_ax_label=yal)
+              annotate_bars=annotation, x_ax_label=xal, y_ax_label=yal,
+              yscale=yscale)
 
 
 def test():
@@ -162,4 +168,5 @@ def test():
 if __name__ == "__main__":
     args = parser.parse_args()
     main(args.xlabel, args.yvalue, args.legend, args.matching, args.directory,
-         args.output, args.annotation, args.xaxislabel, args.yaxislabel)
+         args.output, args.annotation, args.xaxislabel, args.yaxislabel,
+         args.yscalefactor)
