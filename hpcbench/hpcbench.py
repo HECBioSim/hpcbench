@@ -4,7 +4,7 @@
 hpcbench cli launcher utility
 """
 
-__version__ = '0.2'
+__version__ = '0.9'
 
 import sys
 import os
@@ -283,6 +283,11 @@ tools.append({"Names": ["addsacct"],
               "Tags": ["util"],
               "Location": os.path.join(cwd, "util", "add_sacct.py"),
               "Help": "Add slurm accounting info to a hpcench output file"})
+
+tools.append({"Names": ["fits"],
+              "Tags": ["plot"],
+              "Location": os.path.join(cwd, "postprocess", "fits.py"),
+              "Help": "Fit curves to benchmark output data"})
 
 def entry_point():
     """

@@ -53,10 +53,13 @@ parser.add_argument("--noysci", action="store_true",
                     help="Disable scientific notation on the y axis")
 parser.add_argument("--noxsci", action="store_true",
                     help="Disable scientific notation on the x axis")
+parser.add_argument("--yscalefactor", type=float, default=1,
+                    help="y axis scale factor")
 
 def plot(data, xlabel, ylabel, outfile, xscale="linear", yscale="linear",
          legend_outside=False, sort=True, dash=None, x_axis_label=None,
-         y_axis_label=None, noxsci=False, noysci=False, small=False):
+         y_axis_label=None, noxsci=False, noysci=False, small=False,
+         yscalefactor=1):
     """
     Plot the results from get_data.
 
@@ -81,6 +84,7 @@ def plot(data, xlabel, ylabel, outfile, xscale="linear", yscale="linear",
         linestyle = "-"
         if dash and (dash in key):
             linestyle = "dashed"
+        y = [float('nan') if value==0 else value*yscalefactor for value in y]
         ax.plot(x, y, label=key, color=col.get(key), linestyle=linestyle)
     if x_axis_label:
         ax.set_xlabel(x_axis_label)
@@ -201,7 +205,8 @@ def stackplot(data, xlabel, ylabel, outfile, xscale="linear", yscale="linear",
 
 def main(directory, matches, x, y, label, outfile, xscale, yscale,
          legend_outside=False, stack=False, dash=None, xaxlabel=None,
-         yaxlabel=None, noxsci=False, noysci=False, small=False):
+         yaxlabel=None, noxsci=False, noysci=False, small=False,
+         yscalefactor=1):
     """
     Look through all the hpcbench json files in a directory, check that they
     match the criterion specified, and extract the data that will be used,
@@ -231,7 +236,7 @@ def main(directory, matches, x, y, label, outfile, xscale, yscale,
         plot(dicts, x.split(":")[-1], y.split(":")[-1], outfile, xscale,
              yscale, legend_outside=legend_outside, dash=dash,
              x_axis_label=xaxlabel, y_axis_label=yaxlabel, noxsci=noxsci,
-             noysci=noysci, small=small)
+             noysci=noysci, small=small, yscalefactor=yscalefactor)
     if outfile and type(y) is list:
         stackplot(dicts, x.split(":")[-1], y.split(":")[-1], outfile, xscale,
                   yscale, legend_outside=legend_outside, stack=stack)
@@ -277,4 +282,5 @@ if __name__ == "__main__":
                  args.label, args.outfile, args.xscale, args.yscale,
                  args.outside, dash=args.dash, xaxlabel=args.xaxislabel,
                  yaxlabel=args.yaxislabel, noxsci=args.noxsci,
-                 noysci=args.noysci, small=args.small)
+                 noysci=args.noysci, small=args.small,
+                 yscalefactor=args.yscalefactor)

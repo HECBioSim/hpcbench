@@ -261,7 +261,7 @@ def get_data(matches, x, y, label, directory, wildcard=False, y2=None):
             yval = {}
             for element in y:
                 yval[element] = bodge_numeric_func(
-                    path_func(hdict, parse_path_arg(y)))
+                    path_func(hdict, parse_path_arg(element)))
         else:
             yval = bodge_numeric_func(path_func(hdict, parse_path_arg(y)))
         labelval = path_func(hdict, parse_path_arg(label))

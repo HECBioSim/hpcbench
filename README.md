@@ -1,35 +1,27 @@
 # hpcbench
-A set of benchmarks for biomolecular simulation tools.
+A set of benchmarking utilities for biomolecular simulation tools.
+
 ## Features
-- [X] Log and scrape data from running simulations
-- [X] Analyse performance, scaling, system utilisation, temperature, etc
-- [X] Automatically generate and run benchmarks for different HPC systems and molecular simulation packages
-- [ ] Built-in tests for correctness of benchmarked systems
+* [X] Automatically generate and run benchmarks for different HPC systems and molecular simulation packages
+* [X] Log and scrape data from running simulations
+* [X] Analyse performance, scaling, system utilisation, temperature, energy conservation, etc
 
 ## Current support
 * Supported simulations
-    - [X] GROMACS
-    - [X] AMBER
-    - [X] OpenMM
-    - [X] NAMD
-    - [X] LAMMPS
-    - [ ] QM software
-    - [ ] Cryo-EM software
-    - [ ] AI workflows
-    - [ ] At least one multiscale workflow (eventually!)
+    * GROMACS
+    * AMBER
+    * OpenMM
+    * NAMD
+    * LAMMPS
+    * Psi4
+    * Relion 5
 * Supported HPC systems
-    - [X] JADE
-    - [X] ARCHER2
-    - [X] Grace Hopper Testbed
-    - [ ] COSMA
-    - [ ] TURSA
-    - [ ] ISAMBARD
-* Supported schedulers
-    - [X] SLURM
-    - [ ] SGE
-    - [ ] PBS/Torque
+    * JADE
+    * ARCHER2
+    * BEDE-GH
+    * ISAMBARD-AI
 
-## How to use
+## Getting started
 * Download or clone this repo
 * Run `python setup.py install`
 * Run `hpcbench` in the terminal for a list of tools. Run `hpcbench <toolname>` to run that tool.
