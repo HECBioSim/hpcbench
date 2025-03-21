@@ -9,6 +9,7 @@ from hpcbench.plot.table import get_tabular
 import hpcbench.plot.plot_style as style
 import argparse
 from util import bodge_numeric
+from collections import OrderedDict
 
 parser = argparse.ArgumentParser(
     description="Plot a bar chart")
@@ -37,6 +38,8 @@ parser.add_argument("--xaxislabel", type=str, help="x axis label")
 parser.add_argument("--yaxislabel", type=str, help="y axis label")
 parser.add_argument("--yscalefactor", type=float, default=1,
                     help="y axis scale factor")
+parser.add_argument("-s", "--sort", action="store_true",
+                    help="Sort by x label")
 parser.add_argument("-o", "--output", type=str,
                     help="Output file.")
 
@@ -146,9 +149,50 @@ def plot_bars(tabular, outfile, xlabel, label_index=1, value_index=0,
     return
 
 
+def sort_tabular(tabular, group_idx=1, sort_idx=0):
+    """
+    Sort AND group a tabular (created by get_tabular) by indexes of the
+    contents of its rows.
+    
+    Args:
+        tabular: the output of get_tabular
+        group_idx: index of the element of the row group by
+        sort_idx: index of the element to sort by
+    Returns:
+        sorted tabular
+        
+    Developer note: this is an evil hack to get certain figures in the paper to
+    appear correctly and I would not recommend using it or re-using it if
+    possible.
+    """
+    xs = []
+    for key, value in tabular.items():
+        xs.append(key.split(", ")[group_idx])
+    xs = list(set(xs))
+    sorted_by_xs = []
+    for x in xs:
+        curr_x = {}
+        for key, value in tabular.items():
+            if x in key:
+                curr_x[key] = value
+        sorted_by_xs.append(curr_x)
+    for unsorted in range(len(sorted_by_xs)):
+        sorted_by_xs[unsorted] = OrderedDict(
+            sorted(sorted_by_xs[unsorted].items(),
+                   key=lambda item: bodge_numeric(
+                       item[0].split(", ")[sort_idx])))
+    tabular_sorted = OrderedDict()
+    for item in sorted_by_xs:
+        for key, value in item.items():
+            tabular_sorted[key] = value
+    return tabular_sorted
+
+
 def main(x, y, label, filter_list, directory, outfile, annotation, xal, yal,
-         yscale=1.):
+         yscale=1., sort=False):
     tabular = get_tabular(filter_list, [y], [x, label], directory)
+    if sort:
+        tabular = sort_tabular(tabular)
     plot_bars(tabular, outfile, x, label_index=1, value_index=0,
               annotate_bars=annotation, x_ax_label=xal, y_ax_label=yal,
               yscale=yscale)
@@ -169,4 +213,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     main(args.xlabel, args.yvalue, args.legend, args.matching, args.directory,
          args.output, args.annotation, args.xaxislabel, args.yaxislabel,
-         args.yscalefactor)
+         args.yscalefactor, args.sort)
