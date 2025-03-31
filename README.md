@@ -147,5 +147,36 @@ hpcbench logs \
 ### GROMACS stackplot on JADE2
 ![stackplot](https://github.com/HECBioSim/hpcbench/assets/1513223/497284ef-c569-4df5-85b1-b5436b12c95a)
 
+### Populating data for the HECBioSim calculator
+
+The hpcbench `fits` command outputs data files compatible with the online HPC Calculator at hecbiosim.ac.uk. Fits are created using the same syntax as plots. Running `hpcbench fits` multiple times with different parameters will append the fits to the same file.
+
+```bash
+# use --debug to check the quality of the fits as they are calculated
+hpcbench fits \
+-d "'/path/to/hpcbench/json/files'" \
+-m "'meta:Machine=JADE2'" \
+-l "'slurm:program'" \
+-x "'run:Totals:Number of atoms'" \
+-y "'run:Totals:ns/day'" \
+-y "'run:Totals:J/ns'" \
+--debug \
+-o fits.json
+
+# add hardcoded data to file (e.g. text strings for warnings, unit descriptions, icon names)
+hpcbench fits \
+-d "'/path/to/hpcbench/json/files'" \
+-m "'meta:Machine=ARCHER2'" \
+-m "'meta:Best=yes'" \
+-m "'slurm:slurm:nodes=1'" \
+-l "'slurm:program'" \
+-x "'run:Totals:Number of atoms'" \
+-y "'run:Totals:ns/day'" \
+-y "'run:Totals:J/ns'" \
+--hardcode \
+--debug \
+-o fits.json
+```
+
 ## License
 AGPLv3
